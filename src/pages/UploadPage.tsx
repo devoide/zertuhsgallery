@@ -1,9 +1,5 @@
 export function UploadPage() {
-
-  return (
-    <>
-    </>
-  );
+  return <></>;
 }
 
 export default UploadPage;
