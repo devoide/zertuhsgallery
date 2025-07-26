@@ -3,14 +3,16 @@ import { Box, Image, Text } from "@chakra-ui/react";
 interface GalleryCardProps {
   src: string;
   title: string;
+  description?: string;
 }
 
-export const GalleryCard = ({ src, title }: GalleryCardProps) => {
+export const GalleryCard = ({ src, title, description }: GalleryCardProps) => {
   return (
     <Box bg={"green.800"} paddingTop={4}>
-      <Image src={src} alt={title} objectFit="cover"/>
+      <Image src={src} alt={title} objectFit="cover" />
       <Box p={2}>
         <Text fontWeight="bold">{title}</Text>
+        {description ?? <Text>{description}</Text>}
       </Box>
     </Box>
   );
