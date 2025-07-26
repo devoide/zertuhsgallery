@@ -3,6 +3,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { Field, Formik } from "formik";
@@ -28,7 +29,7 @@ export const StoryForm = () => {
             </FormControl>
             <FormControl isRequired>
               <FormLabel htmlFor="story">Story</FormLabel>
-              <Field as={Input} id="story" name="story" />
+              <Field as={Textarea} id="story" name="story" />
             </FormControl>
             <Button type="submit" colorScheme="purple">
               Upload

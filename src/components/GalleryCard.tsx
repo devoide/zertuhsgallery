@@ -8,7 +8,7 @@ interface GalleryCardProps {
 
 export const GalleryCard = ({ src, title, description }: GalleryCardProps) => {
   return (
-    <Box bg={"green.800"} paddingTop={4}>
+    <Box bg={"gray.800"} paddingTop={4}>
       <Image src={src} alt={title} objectFit="cover" />
       <Box p={2}>
         <Text fontWeight="bold">{title}</Text>
