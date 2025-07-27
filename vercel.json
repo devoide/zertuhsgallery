@@ -1,0 +1,20 @@
+{
+    "routes": [
+        {
+            "src": "/",
+            "dest": "/"
+        },
+        {
+            "src": "/upload",
+            "dest": "/"
+        },
+        {
+            "src": "*",
+            "dest": "/"
+        },
+        {
+            "src": "/zertuh",
+            "dest": "/"
+        }
+    ]
+}
