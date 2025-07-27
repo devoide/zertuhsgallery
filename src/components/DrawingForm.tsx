@@ -15,7 +15,6 @@ import { uploadImage } from "../supabase/storage/uploadImage";
 export const DrawingForm = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
-  const secret = import.meta.env.VITE_INSERT_SECRET;
 
   return (
     <Formik
@@ -43,7 +42,6 @@ export const DrawingForm = () => {
             title: values.title,
             description: values.description,
             image_url: imageUrl,
-            secret: secret,
           });
 
           if (dbError) {

@@ -1,4 +1,4 @@
-import { supabase } from "../client";
+import { supabase } from "./client";
 
 export type ImageEntry = {
   id: number;
@@ -13,7 +13,7 @@ export async function fetchImages(): Promise<{
   error: string | null;
 }> {
   const { data, error } = await supabase
-    .from("public_images")
+    .from("images")
     .select("*")
     .order("created_at", { ascending: false });
 

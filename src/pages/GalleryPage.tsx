@@ -1,8 +1,16 @@
-import { Center, Container, Heading, SimpleGrid, Spinner } from "@chakra-ui/react";
-import { GalleryCard } from "../components/GalleryCard";
+import {
+  Center,
+  Container,
+  Heading,
+  SimpleGrid,
+  Spinner,
+} from "@chakra-ui/react";
+import { DrawingCard } from "../components/DrawingCard";
 import { useEffect, useState } from "react";
-import { fetchImages } from "../supabase/storage/fetchImages";
-import type { ImageEntry } from "../supabase/storage/fetchImages";
+import { fetchImages } from "../supabase/fetchImages";
+import type { ImageEntry } from "../supabase/fetchImages";
+import { fetchStories } from "../supabase/fetchStory";
+import { StoryCard } from "../components/StoryCard";
 
 // const testImages = [
 //   {
@@ -43,18 +51,22 @@ import type { ImageEntry } from "../supabase/storage/fetchImages";
 
 export function GalleryPage() {
   const [images, setImages] = useState<ImageEntry[] | null>(null);
+  const [stories, setStories] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadImages() {
-      const { data, error } = await fetchImages();
-      console.log(data)
-      if (data) setImages(data);
-      else console.error(error);
+    async function loadContent() {
+      const { data: imageData, error: imageError } = await fetchImages();
+      if (imageData) setImages(imageData);
+      else console.error(imageError);
+
+      const storyData = await fetchStories();
+      setStories(storyData);
+
       setLoading(false);
     }
 
-    loadImages();
+    loadContent();
   }, []);
 
   if (loading) {
@@ -69,12 +81,21 @@ export function GalleryPage() {
       <Heading mb={6}>Zertuh's Gallery</Heading>
       <SimpleGrid columns={[1, 2, 3]} spacing={6}>
         {images?.map((drawing) => (
-          <GalleryCard
-            key={drawing.id}
+          <DrawingCard
+            key={`image-${drawing.id}`}
             src={drawing.image_url}
             title={drawing.title}
             description={drawing.description}
             created_at={drawing.created_at}
+          />
+        ))}
+
+        {stories?.map((story) => (
+          <StoryCard
+            key={`story-${story.id}`}
+            title={story.title}
+            description={story.content}
+            created_at={story.created_at}
           />
         ))}
       </SimpleGrid>
