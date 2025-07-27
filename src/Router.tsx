@@ -4,6 +4,7 @@ import { createBrowserRouter } from "react-router-dom";
 import GalleryPage from "./pages/GalleryPage";
 import UploadPage from "./pages/UploadPage";
 import NotFound from "./pages/NotFound";
+import { ZertuhPage } from "./pages/ZertuhPage";
 
 export const routes: RouteObject[] = [
   {
@@ -17,6 +18,10 @@ export const routes: RouteObject[] = [
   {
     path: "*",
     element: <NotFound />,
+  },
+  {
+    path: "/zertuh",
+    element: <ZertuhPage />,
   },
 ];
 
