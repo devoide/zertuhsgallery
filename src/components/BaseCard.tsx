@@ -25,6 +25,7 @@ interface BaseCardProps {
   downloadLink?: string;
   downloadLabel?: string;
   truncateLines?: number;
+  previewContent?: ReactNode;
 }
 
 export const BaseCard = ({
@@ -36,6 +37,7 @@ export const BaseCard = ({
   downloadLink,
   downloadLabel = "Download",
   truncateLines,
+  previewContent,
 }: BaseCardProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -48,23 +50,24 @@ export const BaseCard = ({
         cursor="pointer"
         onClick={onOpen}
       >
-        {src && (
-          <Flex
-            height={"300px"}
-            align={"center"}
-            justify={"center"}
-            overflow={"hidden"}
-            bg={"white"}
-          >
-            <Image
-              src={src}
-              alt={title}
-              objectFit={"cover"}
-              h={"100%"}
-              w={"100%"}
-            />
-          </Flex>
-        )}
+        {previewContent ??
+          (src && (
+            <Flex
+              height={"300px"}
+              align={"center"}
+              justify={"center"}
+              overflow={"hidden"}
+              bg={"white"}
+            >
+              <Image
+                src={src}
+                alt={title}
+                objectFit={"cover"}
+                h={"100%"}
+                w={"100%"}
+              />
+            </Flex>
+          ))}
 
         <VStack p={3} align={"flex-start"}>
           <Text fontWeight="bold" fontSize="lg">
@@ -117,7 +120,7 @@ export const BaseCard = ({
             )}
           </ModalBody>
           <ModalFooter justifyContent={"flex-start"} mb={3}>
-            {downloadLink && src && (
+            {downloadLink && (
               <Button
                 colorScheme={"purple"}
                 as={"a"}

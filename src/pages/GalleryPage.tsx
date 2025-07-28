@@ -11,6 +11,9 @@ import { fetchImages } from "../supabase/fetchImages";
 import type { ImageEntry } from "../supabase/fetchImages";
 import { fetchStories } from "../supabase/fetchStory";
 import { StoryCard } from "../components/StoryCard";
+import { fetchAudio } from "../supabase/fetchAudio";
+import type { AudioEntry } from "../supabase/fetchAudio";
+import { MusicCard } from "../components/MusicCard";
 
 // const testImages = [
 //   {
@@ -51,6 +54,7 @@ import { StoryCard } from "../components/StoryCard";
 
 export function GalleryPage() {
   const [images, setImages] = useState<ImageEntry[] | null>(null);
+  const [audios, setAudio] = useState<AudioEntry[] | null>(null);
   const [stories, setStories] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +70,29 @@ export function GalleryPage() {
     ));
   }, [images]);
 
+  const storyCards = useMemo(() => {
+    return stories?.map((story) => (
+      <StoryCard
+        key={`story-${story.id}`}
+        title={story.title}
+        description={story.content}
+        created_at={story.created_at}
+      />
+    ));
+  }, [stories]);
+
+  const audioCards = useMemo(() => {
+    return audios?.map((audio) => (
+      <MusicCard
+        key={`audio-${audio.id}`}
+        src={audio.audio_url}
+        title={audio.title}
+        description={audio.description}
+        created_at={audio.created_at}
+      />
+    ));
+  }, [audios]);
+
   useEffect(() => {
     async function loadContent() {
       const { data: imageData, error: imageError } = await fetchImages();
@@ -74,6 +101,10 @@ export function GalleryPage() {
 
       const storyData = await fetchStories();
       setStories(storyData);
+
+      const { data: audioData, error: audioError } = await fetchAudio();
+      if (audioData) setAudio(audioData);
+      else console.error(audioError);
 
       setLoading(false);
     }
@@ -93,15 +124,8 @@ export function GalleryPage() {
       <Heading mb={6}>Zertuh's Gallery</Heading>
       <SimpleGrid columns={[1, 2, 3]} spacing={6}>
         {imageCards}
-
-        {stories?.map((story) => (
-          <StoryCard
-            key={`story-${story.id}`}
-            title={story.title}
-            description={story.content}
-            created_at={story.created_at}
-          />
-        ))}
+        {storyCards}
+        {audioCards}
       </SimpleGrid>
     </Container>
   );
