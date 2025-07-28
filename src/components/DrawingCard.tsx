@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { BaseCard } from "./BaseCard";
 
 interface DrawingCardProps {
@@ -7,7 +8,7 @@ interface DrawingCardProps {
   created_at: string;
 }
 
-export const DrawingCard = ({
+export const DrawingCard = memo(({
   src,
   title,
   description,
@@ -24,4 +25,4 @@ export const DrawingCard = ({
       truncateLines={2}
     />
   );
-};
+});

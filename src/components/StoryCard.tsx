@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { BaseCard } from "./BaseCard";
 
 interface StoryCardProps {
@@ -6,7 +7,7 @@ interface StoryCardProps {
   created_at: string;
 }
 
-export const StoryCard = ({
+export const StoryCard = memo(({
   title,
   description,
   created_at,
@@ -19,4 +20,4 @@ export const StoryCard = ({
       truncateLines={20}
     />
   );
-};
+});
