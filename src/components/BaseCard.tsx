@@ -97,19 +97,11 @@ export const BaseCard = ({
         <ModalContent bg={"gray.800"}>
           <ModalHeader>{title}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody mb={truncateLines == 20 ? 5 : 0}>
             {modalContent ?? (
               <>
                 {src && (
-                  <Image
-                    src={src}
-                    alt={title}
-                    objectFit={"cover"}
-                    maxH={"60vh"}
-                    h={"100%"}
-                    w={"100%"}
-                    mb={4}
-                  />
+                  <Image src={src} alt={title} h={"100%"} w={"100%"} mb={4} />
                 )}
                 {description && (
                   <Text fontSize="sm" color="gray.200">
@@ -119,8 +111,8 @@ export const BaseCard = ({
               </>
             )}
           </ModalBody>
-          <ModalFooter justifyContent={"flex-start"} mb={3}>
-            {downloadLink && (
+          {downloadLink && (
+            <ModalFooter justifyContent={"flex-start"} mb={3}>
               <Button
                 colorScheme={"purple"}
                 as={"a"}
@@ -130,8 +122,8 @@ export const BaseCard = ({
               >
                 {downloadLabel}
               </Button>
-            )}
-          </ModalFooter>
+            </ModalFooter>
+          )}
         </ModalContent>
       </Modal>
     </>
