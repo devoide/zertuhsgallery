@@ -6,14 +6,16 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { DrawingCard } from "../components/DrawingCard";
-import { useEffect, useMemo, useState, type JSX } from "react";
-import { fetchImages } from "../supabase/fetchImages";
-import type { ImageEntry } from "../supabase/fetchImages";
-import { fetchStories } from "../supabase/fetchStory";
+import { useEffect, useState } from "react";
 import { StoryCard } from "../components/StoryCard";
-import { fetchAudio } from "../supabase/fetchAudio";
-import type { AudioEntry } from "../supabase/fetchAudio";
 import { MusicCard } from "../components/MusicCard";
+import { Pagination } from "../components/Pagination";
+import type { FeedItem } from "../supabase/types";
+import { supabase } from "../supabase/client";
+import { fetchFeedPage } from "../supabase/fetchFeed";
+import { useSearchParams } from "react-router-dom";
+
+const PAGE_SIZE = 15;
 
 // const testImages = [
 //   {
@@ -53,85 +55,42 @@ import { MusicCard } from "../components/MusicCard";
 // ];
 
 export function GalleryPage() {
-  const [images, setImages] = useState<ImageEntry[] | null>(null);
-  const [audios, setAudio] = useState<AudioEntry[] | null>(null);
-  const [stories, setStories] = useState<any[] | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const sortedCards = useMemo(() => {
-    const items: {
-      created_at: string;
-      element: JSX.Element;
-    }[] = [];
-
-    images?.forEach((drawing) => {
-      items.push({
-        created_at: drawing.created_at,
-        element: (
-          <DrawingCard
-            key={`image-${drawing.id}`}
-            src={drawing.image_url}
-            title={drawing.title}
-            description={drawing.description}
-            created_at={drawing.created_at}
-          />
-        ),
-      });
-    });
-
-    stories?.forEach((story) => {
-      items.push({
-        created_at: story.created_at,
-        element: (
-          <StoryCard
-            key={`story-${story.id}`}
-            title={story.title}
-            description={story.content}
-            created_at={story.created_at}
-          />
-        ),
-      });
-    });
-
-    audios?.forEach((audio) => {
-      items.push({
-        created_at: audio.created_at,
-        element: (
-          <MusicCard
-            key={`audio-${audio.id}`}
-            src={audio.audio_url}
-            title={audio.title}
-            description={audio.description}
-            created_at={audio.created_at}
-          />
-        ),
-      });
-    });
-
-    return items.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [images, stories, audios]);
+  useEffect(() => {
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    setCurrentPage(page);
+  }, [searchParams]);
 
   useEffect(() => {
-    async function loadContent() {
-      const { data: imageData, error: imageError } = await fetchImages();
-      if (imageData) setImages(imageData);
-      else console.error(imageError);
+    async function fetchPageCount() {
+      const { count } = await supabase
+        .from("feed")
+        .select("*", { count: "exact", head: true });
 
-      const storyData = await fetchStories();
-      setStories(storyData);
+      const total = Math.ceil((count ?? 0) / PAGE_SIZE);
+      setTotalPages(total);
+    }
 
-      const { data: audioData, error: audioError } = await fetchAudio();
-      if (audioData) setAudio(audioData);
-      else console.error(audioError);
+    fetchPageCount();
+  }, []);
 
+  useEffect(() => {
+    async function loadPageData() {
+      setLoading(true);
+      const data = await fetchFeedPage(currentPage);
+      setFeedItems(data);
       setLoading(false);
     }
 
-    loadContent();
-  }, []);
+    loadPageData();
+  }, [currentPage]);
 
   if (loading) {
     return (
@@ -140,14 +99,56 @@ export function GalleryPage() {
       </Center>
     );
   }
+
   return (
     <Container maxW={"6xl"} paddingY={10}>
       <Heading mb={6}>Zertuh's Gallery</Heading>
       <SimpleGrid columns={[1, 2, 3]} spacing={6}>
-        {sortedCards.map((item) => (
-          <>{item.element}</>
-        ))}
+        {feedItems.map((entry) => {
+          switch (entry.type) {
+            case "drawing":
+              return (
+                <DrawingCard
+                  key={`drawing-${entry.data.id}`}
+                  src={entry.data.image_url}
+                  title={entry.data.title}
+                  description={entry.data.description}
+                  created_at={entry.created_at}
+                />
+              );
+            case "story":
+              return (
+                <StoryCard
+                  key={`story-${entry.data.id}`}
+                  title={entry.data.title}
+                  description={entry.data.content}
+                  created_at={entry.created_at}
+                />
+              );
+            case "music":
+              return (
+                <MusicCard
+                  key={`music-${entry.data.id}`}
+                  src={entry.data.audio_url}
+                  title={entry.data.title}
+                  description={entry.data.description}
+                  created_at={entry.created_at}
+                />
+              );
+            default:
+              return null;
+          }
+        })}
       </SimpleGrid>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => {
+            setSearchParams({ page: page.toString() });
+          }}
+        />
+      )}
     </Container>
   );
 }
