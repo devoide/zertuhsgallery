@@ -1,58 +1,30 @@
 import {
+  ButtonGroup,
   Center,
   Container,
+  Flex,
   Heading,
+  HStack,
+  IconButton,
+  Input,
+  Pagination,
+  Popover,
+  Portal,
   SimpleGrid,
   Spinner,
+  Text,
 } from "@chakra-ui/react";
 import { DrawingCard } from "../components/DrawingCard";
 import { useEffect, useState } from "react";
 import { StoryCard } from "../components/StoryCard";
 import { MusicCard } from "../components/MusicCard";
-import { Pagination } from "../components/Pagination";
 import type { FeedItem } from "../supabase/types";
 import { supabase } from "../supabase/client";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { useSearchParams } from "react-router-dom";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 const PAGE_SIZE = 15;
-
-// const testImages = [
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-//   {
-//     src: "public/zertuh1.png",
-//     title: "test",
-//     description: "goon with em goon with em hfsdldhfkjsdj",
-//   },
-// ];
 
 export function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,8 +32,12 @@ export function GalleryPage() {
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const paginate = (value: number | string) => {
+    setSearchParams({ page: value.toString() });
+  };
 
   useEffect(() => {
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -74,8 +50,7 @@ export function GalleryPage() {
         .from("feed")
         .select("*", { count: "exact", head: true });
 
-      const total = Math.ceil((count ?? 0) / PAGE_SIZE);
-      setTotalPages(total);
+      setTotalItems(count ?? 0);
     }
 
     fetchPageCount();
@@ -102,8 +77,10 @@ export function GalleryPage() {
 
   return (
     <Container maxW={"6xl"} paddingY={10}>
-      <Heading mb={6}>Zertuh's Gallery</Heading>
-      <SimpleGrid columns={[1, 2, 3]} spacing={6}>
+      <Heading mb={6} size={"4xl"} fontWeight={"bold"}>
+        Zertuh's Gallery
+      </Heading>
+      <SimpleGrid columns={[1, 2, 3]} gap={6}>
         {feedItems.map((entry) => {
           switch (entry.type) {
             case "drawing":
@@ -140,15 +117,111 @@ export function GalleryPage() {
           }
         })}
       </SimpleGrid>
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => {
-            setSearchParams({ page: page.toString() });
-          }}
-        />
-      )}
+      <Flex mt={8} justify={"center"}>
+        <Pagination.Root
+          count={totalItems}
+          pageSize={PAGE_SIZE}
+          page={currentPage}
+          onPageChange={(e) => paginate(e.page)}
+        >
+          <ButtonGroup variant="outline" attached size="md">
+            <Pagination.PrevTrigger asChild>
+              <IconButton>
+                <LuChevronLeft />
+              </IconButton>
+            </Pagination.PrevTrigger>
+
+            <Pagination.Context>
+              {({ pages }) =>
+                pages.map((page, index) => {
+                  if (page.type === "page") {
+                    return (
+                      <Pagination.Item key={index} {...page} asChild>
+                        <IconButton
+                          variant={{ base: "outline", _selected: "solid" }}
+                          borderRadius={0}
+                        >
+                          {page.value}
+                        </IconButton>
+                      </Pagination.Item>
+                    );
+                  }
+
+                  if (page.type === "ellipsis") {
+                    return (
+                      <Popover.Root positioning={{ placement: "top" }}>
+                        <Popover.Trigger asChild>
+                          <Pagination.Ellipsis
+                            key={index}
+                            index={index}
+                            asChild
+                          >
+                            <IconButton variant="outline" borderRadius={0}>
+                              …
+                            </IconButton>
+                          </Pagination.Ellipsis>
+                        </Popover.Trigger>
+                        <Portal>
+                          <Popover.Positioner>
+                            <Popover.Content
+                              bg={"gray.800"}
+                              width={"auto"}
+                            >
+                              <Popover.Body width={"auto"}>
+                                <HStack width={"auto"}>
+                                  <Input
+                                    maxW={"1/3"}
+                                    defaultValue={currentPage}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        const value = parseInt(
+                                          e.currentTarget.value,
+                                          10
+                                        );
+                                        if (
+                                          !isNaN(value) &&
+                                          value <= pages.length
+                                        ) {
+                                          paginate(value);
+                                        }
+                                      }
+                                    }}
+                                    onBlur={(e) => {
+                                      const value = parseInt(
+                                        e.currentTarget.value,
+                                        10
+                                      );
+                                      if (
+                                        !isNaN(value) &&
+                                        value <= pages.length
+                                      ) {
+                                        paginate(value);
+                                      }
+                                    }}
+                                  />
+                                  <Text>{`of ${pages.length}`}</Text>
+                                </HStack>
+                              </Popover.Body>
+                            </Popover.Content>
+                          </Popover.Positioner>
+                        </Portal>
+                      </Popover.Root>
+                    );
+                  }
+
+                  return null;
+                })
+              }
+            </Pagination.Context>
+
+            <Pagination.NextTrigger asChild>
+              <IconButton>
+                <LuChevronRight />
+              </IconButton>
+            </Pagination.NextTrigger>
+          </ButtonGroup>
+        </Pagination.Root>
+      </Flex>
     </Container>
   );
 }

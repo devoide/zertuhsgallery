@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  VStack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Button, Input, VStack, Text, Field } from "@chakra-ui/react";
 import { useState } from "react";
 import { supabase } from "../supabase/client";
 
@@ -30,19 +22,19 @@ export const ZertuhPage = () => {
 
   return (
     <Box p={8} maxW="md" mx="auto">
-      <VStack spacing={4} align="stretch">
-        <FormControl isRequired>
-          <FormLabel>Email</FormLabel>
+      <VStack gap={4} align="stretch">
+        <Field.Root required>
+          <Field.Label>Email</Field.Label>
           <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel>Password</FormLabel>
+        </Field.Root>
+        <Field.Root required>
+          <Field.Label>Password</Field.Label>
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </FormControl>
+        </Field.Root>
         {error && <Text color="red.400">{error}</Text>}
         <Button colorScheme="purple" onClick={handleLogin}>
           Login

@@ -1,62 +1,63 @@
 import {
   Button,
-  FormControl,
-  FormLabel,
+  Field,
+  FileUpload,
   Input,
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { Field, Formik } from "formik";
-import { uploadStory } from "../supabase/uploadStory";
 import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { uploadStory } from "../supabase/uploadStory";
+
+interface FormValues {
+  title: string;
+  story: string;
+}
 
 export const StoryForm = () => {
   const [isPending, startTransition] = useTransition();
+  const { register, handleSubmit, setValue } = useForm<FormValues>();
+
+  const onSubmit = handleSubmit((data: FormValues) => {
+    startTransition(async () => {
+      const { success, error } = await uploadStory({
+        title: data.title,
+        story: data.story,
+      });
+
+      if (!success) {
+        console.error(error);
+        return;
+      }
+    });
+  });
   return (
-    <Formik
-      initialValues={{
-        title: "",
-        story: "",
-      }}
-      onSubmit={(values, actions) => {
-        startTransition(async () => {
-          const { success, error } = await uploadStory({
-            title: values.title,
-            story: values.story,
-          });
-
-          if (!success) {
-            console.error(error);
-            return;
-          }
-
-          actions.resetForm();
-        });
-      }}
-    >
-      {({ handleSubmit }) => (
-        <form onSubmit={handleSubmit}>
-          <VStack spacing={4} align="flex-start">
-            <FormControl isRequired>
-              <FormLabel htmlFor="title">Title</FormLabel>
-              <Field as={Input} id="title" name="title" disabled={isPending} />
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel htmlFor="story">Story</FormLabel>
-              <Field
-                as={Textarea}
-                id="story"
-                name="story"
-                rows={10}
-                disabled={isPending}
-              />
-            </FormControl>
-            <Button type="submit" colorScheme="purple">
-              {isPending ? "Uploading..." : "Upload"}
-            </Button>
-          </VStack>
-        </form>
-      )}
-    </Formik>
+    <form onSubmit={onSubmit}>
+      <VStack gap={4} align={"flex-start"}>
+        <Field.Root required>
+          <Field.Label>
+            Title
+            <Field.RequiredIndicator />
+          </Field.Label>
+          <Input disabled={isPending} {...register("title")} />
+        </Field.Root>
+        <Field.Root required>
+          <Field.Label>
+            Story
+            <Field.RequiredIndicator />
+          </Field.Label>
+          <Textarea disabled={isPending} {...register("story")} rows={10} />
+        </Field.Root>
+        <Button
+          loading={isPending}
+          loadingText={"Uploading"}
+          type="submit"
+          variant={"solid"}
+        >
+          Upload
+        </Button>
+      </VStack>
+    </form>
   );
 };

@@ -1,110 +1,118 @@
 import {
   Button,
-  FormControl,
-  FormLabel,
+  Field,
+  FileUpload,
+  HStack,
   Input,
   VStack,
-  Text,
-  Image,
 } from "@chakra-ui/react";
-import { Field, Formik } from "formik";
-import { useRef, useTransition } from "react";
-import { supabase } from "../supabase/client";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { HiUpload } from "react-icons/hi";
 import { uploadImage } from "../supabase/storage/uploadImage";
+import { supabase } from "../supabase/client";
+
+interface FormValues {
+  title: string;
+  description?: string;
+  file: File | null;
+}
 
 export const DrawingForm = () => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
+  const { register, handleSubmit, setValue, reset } = useForm<FormValues>();
 
+  const onSubmit = handleSubmit((data: FormValues) => {
+    startTransition(async () => {
+      if (!data.file) return;
+
+      const { imageUrl, error } = await uploadImage({
+        file: data.file,
+        bucket: "images",
+        folder: "drawings",
+      });
+
+      if (error) {
+        console.error("Upload failed:", error);
+        return;
+      }
+
+      const { error: dbError } = await supabase.from("images").insert({
+        title: data.title,
+        description: data.description,
+        image_url: imageUrl,
+      });
+
+      if (dbError) {
+        console.error("DB insert failed:", dbError);
+        return;
+      }
+
+      reset();
+    });
+  });
   return (
-    <Formik
-      initialValues={{
-        title: "",
-        description: "",
-        file: null,
-      }}
-      onSubmit={(values, actions) => {
-        startTransition(async () => {
-          if (!values.file) return;
-
-          const { imageUrl, error } = await uploadImage({
-            file: values.file,
-            bucket: "images",
-            folder: "drawings",
-          });
-
-          if (error) {
-            console.error("Upload failed:", error);
-            return;
-          }
-
-          const { error: dbError } = await supabase.from("images").insert({
-            title: values.title,
-            description: values.description,
-            image_url: imageUrl,
-          });
-
-          if (dbError) {
-            console.error("DB insert failed:", dbError);
-            return;
-          }
-
-          actions.resetForm();
-        });
-      }}
-    >
-      {({ handleSubmit, setFieldValue, values }) => (
-        <form onSubmit={handleSubmit}>
-          <VStack spacing={4} align="flex-start">
-            <FormControl isRequired>
-              <FormLabel>Upload Drawing</FormLabel>
-              <input
-                type="file"
-                accept="image/*"
-                ref={inputRef}
-                style={{ display: "none" }}
-                onChange={(event) => {
-                  setFieldValue("file", event.currentTarget.files?.[0] ?? null);
-                }}
-                disabled={isPending}
-              />
-              <Button
-                onClick={() => inputRef.current?.click()}
-                colorScheme="purple"
-              >
-                Choose File
+    <form onSubmit={onSubmit}>
+      <VStack gap={4} align={"flex-start"}>
+        <Field.Root required>
+          <Field.Label>
+            Upload Drawing <Field.RequiredIndicator />
+          </Field.Label>
+          <FileUpload.Root
+            accept={["image/*"]}
+            onFileAccept={(details) => {
+              const file = details.files[0];
+              setValue("file", file, { shouldValidate: true });
+            }}
+            maxFiles={1}
+            key={Math.random()}
+          >
+            <FileUpload.HiddenInput />
+            <FileUpload.Trigger asChild>
+              <Button variant={"outline"}>
+                <HiUpload /> Upload File
               </Button>
-              {values.file && (
-                <VStack spacing={0} align="flex-start">
-                  <Text fontSize="sm" mt={2}>
-                    Selected: {(values.file as File).name}
-                  </Text>
-                  <Image
-                    src={URL.createObjectURL(values.file as File)}
-                    maxH="200px"
-                  />
-                </VStack>
-              )}
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel htmlFor="title">Title</FormLabel>
-              <Field as={Input} id="title" name="title" disabled={isPending} />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="description">Description</FormLabel>
-              <Field
-                as={Input}
-                id="description"
-                name="description"
-                disabled={isPending}
-              />
-            </FormControl>
-            <Button type="submit" colorScheme="purple" disabled={isPending}>
-              {isPending ? "Uploading..." : "Upload"}
-            </Button>
-          </VStack>
-        </form>
-      )}
-    </Formik>
+            </FileUpload.Trigger>
+            <FileUpload.ItemGroup w="auto">
+              <FileUpload.Context>
+                {({ acceptedFiles }) =>
+                  acceptedFiles.map((file) => (
+                    <FileUpload.Item key={file.name} file={file}>
+                      <VStack align={"start"}>
+                        <HStack width={"full"} justify={"space-between"}>
+                          <FileUpload.ItemName />
+                          <FileUpload.ItemDeleteTrigger />
+                        </HStack>
+                        <FileUpload.ItemSizeText />
+                        <FileUpload.ItemPreviewImage maxH={"sm"} />
+                      </VStack>
+                    </FileUpload.Item>
+                  ))
+                }
+              </FileUpload.Context>
+            </FileUpload.ItemGroup>
+          </FileUpload.Root>
+        </Field.Root>
+        <Field.Root required>
+          <Field.Label>
+            Title
+            <Field.RequiredIndicator />
+          </Field.Label>
+          <Input disabled={isPending} {...register("title")} />
+        </Field.Root>
+        <Field.Root>
+          <Field.Label>Description</Field.Label>
+          <Input disabled={isPending} {...register("description")} />
+        </Field.Root>
+        <Button
+          loading={isPending}
+          loadingText={"Uploading"}
+          type="submit"
+          variant={"solid"}
+        >
+          Upload
+        </Button>
+      </VStack>
+    </form>
   );
 };

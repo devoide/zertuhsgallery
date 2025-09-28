@@ -1,10 +1,8 @@
 import {
+  Center,
   Container,
   Heading,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
+  Spinner,
   Tabs,
   Text,
 } from "@chakra-ui/react";
@@ -29,29 +27,26 @@ export default function UploadPage() {
 
   return (
     <Container maxW={"6xl"} py={10}>
-      <Heading mb={4}>Upload Zertuity</Heading>
-      <Tabs>
-        <TabList>
-          <Tab>Drawing</Tab>
-          <Tab>Music</Tab>
-          <Tab>Manga</Tab>
-          <Tab>Story</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <DrawingForm />
-          </TabPanel>
-          <TabPanel>
-            <MusicForm />
-          </TabPanel>
-          <TabPanel>
-            <Text>manga</Text>
-          </TabPanel>
-          <TabPanel>
-            <StoryForm />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <Heading mb={4} size={"4xl"} fontWeight={"bold"}>
+        Upload Zertuity
+      </Heading>
+      <Tabs.Root defaultValue="drawing">
+        <Tabs.List>
+          <Tabs.Trigger value="drawing">Drawing</Tabs.Trigger>
+          <Tabs.Trigger value="music">Music</Tabs.Trigger>
+          <Tabs.Trigger value="manga">Manga</Tabs.Trigger>
+          <Tabs.Trigger value="story">Story</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="drawing">
+          <DrawingForm />
+        </Tabs.Content>
+        <Tabs.Content value="music">
+          <MusicForm />
+        </Tabs.Content>
+        <Tabs.Content value="story">
+          <StoryForm />
+        </Tabs.Content>
+      </Tabs.Root>
     </Container>
   );
 }

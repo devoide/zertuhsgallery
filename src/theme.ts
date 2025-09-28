@@ -1,14 +1,19 @@
-import { extendTheme } from "@chakra-ui/react";
+import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
 
-const theme = extendTheme({
-  styles: {
-    global: {
-      body: {
-        bg: "gray.900",
-        color: "white",
+const config = defineConfig({
+  theme: {
+    semanticTokens: {
+      colors: {
+        bg: { value: "gray.900" },
+        border: { value: "gray.800" },
       },
+    },
+  },
+  globalCss: {
+    "html, body": {
+      bg: "bg",
     },
   },
 });
 
-export default theme;
+export const system = createSystem(defaultConfig, config);
