@@ -168,7 +168,7 @@ export function GalleryPage() {
                               width={"auto"}
                             >
                               <Popover.Body width={"auto"}>
-                                <HStack width={"auto"}>
+                                <HStack width={"min-content"}>
                                   <Input
                                     maxW={"1/3"}
                                     defaultValue={currentPage}
@@ -199,7 +199,7 @@ export function GalleryPage() {
                                       }
                                     }}
                                   />
-                                  <Text>{`of ${pages.length}`}</Text>
+                                  <Text width={"max-content"}>{`of ${pages.length}`}</Text>
                                 </HStack>
                               </Popover.Body>
                             </Popover.Content>
