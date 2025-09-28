@@ -226,5 +226,6 @@ export function GalleryPage() {
   );
 }
 //TODO: edit and delete function for zertuhs. sort by old (add button for sort) add filter function
+//TODO: add mosaic gallery style. 
 
 export default GalleryPage;
