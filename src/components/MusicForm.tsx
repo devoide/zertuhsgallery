@@ -52,7 +52,7 @@ export const MusicForm = () => {
             Upload Music <Field.RequiredIndicator />
           </Field.Label>
           <FileUpload.Root
-            accept={["audio/*"]}
+            accept={["audio/*", ".mp3", ".m4a", ".wav", ".ogg"]}
             onFileAccept={(details) => {
               const file = details.files[0];
               setValue("file", file, { shouldValidate: true });
