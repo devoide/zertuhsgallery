@@ -1,7 +1,9 @@
 import {
+  Button,
   Center,
   Container,
   Heading,
+  HStack,
   Spinner,
   Tabs,
   Text,
@@ -11,9 +13,11 @@ import { supabase } from "../supabase/client";
 import { DrawingForm } from "../components/DrawingForm";
 import { MusicForm } from "../components/MusicForm";
 import { StoryForm } from "../components/StoryForm";
+import { useNavigate } from "react-router-dom";
 
 export default function UploadPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  let navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,9 +31,20 @@ export default function UploadPage() {
 
   return (
     <Container maxW={"6xl"} py={10}>
-      <Heading mb={4} size={"4xl"} fontWeight={"bold"}>
-        Upload Zertuity
-      </Heading>
+      <HStack justify={"space-between"}>
+        <Heading mb={4} size={"4xl"} fontWeight={"bold"}>
+          Upload Zertuity
+        </Heading>
+        <Button
+          variant={"solid"}
+          onClick={() => {
+            navigate("/");
+          }}
+        >
+          Back
+        </Button>
+      </HStack>
+
       <Tabs.Root defaultValue="drawing">
         <Tabs.List>
           <Tabs.Trigger value="drawing">Drawing</Tabs.Trigger>

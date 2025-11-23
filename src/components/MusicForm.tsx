@@ -19,6 +19,15 @@ export const MusicForm = () => {
     startTransition(async () => {
       if (!data.file) return;
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("no zertuh user");
+        return;
+      }
+
       const { audioUrl, error } = await uploadAudio({
         file: data.file,
         bucket: "images", //ignore ts too lazy to add new bucket lol
@@ -34,6 +43,7 @@ export const MusicForm = () => {
         title: data.title,
         description: data.description,
         audio_url: audioUrl,
+        author: user.id,
       });
 
       if (dbError) {

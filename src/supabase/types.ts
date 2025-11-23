@@ -5,12 +5,18 @@ export type FeedEntryRaw = {
   type: FeedType;
   ref_id: string;
   created_at: string;
+  author: string;
 };
 
 export type FeedItem =
-  | { type: "drawing"; data: ImageEntry; created_at: string }
-  | { type: "story"; data: StoryEntry; created_at: string }
-  | { type: "music"; data: CompositionEntry; created_at: string };
+  | { type: "drawing"; data: ImageEntry; created_at: string; author: string }
+  | { type: "story"; data: StoryEntry; created_at: string; author: string }
+  | {
+      type: "music";
+      data: CompositionEntry;
+      created_at: string;
+      author: string;
+    };
 
 export type ImageEntry = {
   id: string;
@@ -18,6 +24,7 @@ export type ImageEntry = {
   description: string;
   image_url: string;
   created_at: string;
+  author: string;
 };
 
 export type StoryEntry = {
@@ -25,6 +32,7 @@ export type StoryEntry = {
   title: string;
   content: string;
   created_at: string;
+  author: string;
 };
 
 export type CompositionEntry = {
@@ -33,4 +41,11 @@ export type CompositionEntry = {
   description: string;
   audio_url: string;
   created_at: string;
+  author: string;
+};
+
+export type ProfileEntry = {
+  id: string;
+  username: string;
+  color: string;
 };

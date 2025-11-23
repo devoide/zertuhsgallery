@@ -1,4 +1,5 @@
 import {
+  Button,
   ButtonGroup,
   Center,
   Container,
@@ -18,10 +19,11 @@ import { DrawingCard } from "../components/DrawingCard";
 import { useEffect, useState } from "react";
 import { StoryCard } from "../components/StoryCard";
 import { MusicCard } from "../components/MusicCard";
-import type { FeedItem } from "../supabase/types";
+import { ProfileEntry, type FeedItem } from "../supabase/types";
 import { supabase } from "../supabase/client";
 import { fetchFeedPage } from "../supabase/fetchFeed";
-import { useSearchParams } from "react-router-dom";
+import { fetchProfiles } from "../supabase/fetchProfiles";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 const PAGE_SIZE = 15;
@@ -34,6 +36,9 @@ export function GalleryPage() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [totalItems, setTotalItems] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  let navigate = useNavigate();
 
   const paginate = (value: number | string) => {
     setSearchParams({ page: value.toString() });
@@ -45,15 +50,21 @@ export function GalleryPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    async function fetchPageCount() {
+    async function fetchPageCountNProfiles() {
       const { count } = await supabase
         .from("feed")
         .select("*", { count: "exact", head: true });
 
       setTotalItems(count ?? 0);
-    }
 
-    fetchPageCount();
+      const profiles = await fetchProfiles();
+      setProfiles(profiles);
+    }
+    fetchPageCountNProfiles();
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setIsLoggedIn(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -77,11 +88,25 @@ export function GalleryPage() {
 
   return (
     <Container maxW={"6xl"} paddingY={10}>
-      <Heading mb={6} size={"4xl"} fontWeight={"bold"}>
-        Zertuh's Gallery
-      </Heading>
+      <HStack justify={"space-between"}>
+        <Heading mb={6} size={"4xl"} fontWeight={"bold"}>
+          Zertuh's Gallery
+        </Heading>
+        {isLoggedIn && (
+          <Button
+            variant={"solid"}
+            onClick={() => {
+              navigate("/upload");
+            }}
+          >
+            Upload
+          </Button>
+        )}
+      </HStack>
+
       <SimpleGrid columns={[1, 2, 3]} gap={6}>
         {feedItems.map((entry) => {
+          const profile = profiles.find((p) => p.id === entry.data.author);
           switch (entry.type) {
             case "drawing":
               return (
@@ -91,6 +116,7 @@ export function GalleryPage() {
                   title={entry.data.title}
                   description={entry.data.description}
                   created_at={entry.created_at}
+                  author={profile}
                 />
               );
             case "story":
@@ -100,6 +126,7 @@ export function GalleryPage() {
                   title={entry.data.title}
                   description={entry.data.content}
                   created_at={entry.created_at}
+                  author={profile}
                 />
               );
             case "music":
@@ -110,6 +137,7 @@ export function GalleryPage() {
                   title={entry.data.title}
                   description={entry.data.description}
                   created_at={entry.created_at}
+                  author={profile}
                 />
               );
             default:
@@ -163,10 +191,7 @@ export function GalleryPage() {
                         </Popover.Trigger>
                         <Portal>
                           <Popover.Positioner>
-                            <Popover.Content
-                              bg={"gray.800"}
-                              width={"auto"}
-                            >
+                            <Popover.Content bg={"gray.800"} width={"auto"}>
                               <Popover.Body width={"auto"}>
                                 <HStack width={"min-content"}>
                                   <Input
@@ -199,7 +224,9 @@ export function GalleryPage() {
                                       }
                                     }}
                                   />
-                                  <Text width={"max-content"}>{`of ${pages.length}`}</Text>
+                                  <Text
+                                    width={"max-content"}
+                                  >{`of ${pages.length}`}</Text>
                                 </HStack>
                               </Popover.Body>
                             </Popover.Content>
@@ -226,6 +253,6 @@ export function GalleryPage() {
   );
 }
 //TODO: edit and delete function for zertuhs. sort by old (add button for sort) add filter function
-//TODO: add mosaic gallery style. 
+//TODO: add mosaic gallery style.
 
 export default GalleryPage;

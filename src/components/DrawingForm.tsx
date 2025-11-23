@@ -26,6 +26,15 @@ export const DrawingForm = () => {
     startTransition(async () => {
       if (!data.file) return;
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("no zertuh user");
+        return;
+      }
+
       const { imageUrl, error } = await uploadImage({
         file: data.file,
         bucket: "images",
@@ -41,6 +50,7 @@ export const DrawingForm = () => {
         title: data.title,
         description: data.description,
         image_url: imageUrl,
+        author: user.id,
       });
 
       if (dbError) {

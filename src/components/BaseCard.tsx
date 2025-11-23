@@ -1,10 +1,12 @@
 import {
+  Badge,
   Box,
   Button,
   CloseButton,
   Dialog,
   Flex,
   Heading,
+  HStack,
   Image,
   Portal,
   Text,
@@ -12,12 +14,14 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { ReactNode } from "react";
+import { ProfileEntry } from "../supabase/types";
 
 interface BaseCardProps {
   src?: string;
   title: string;
   description?: string;
   created_at: string;
+  author: ProfileEntry | undefined;
   modalContent?: ReactNode;
   downloadLink?: string;
   downloadLabel?: string;
@@ -30,6 +34,7 @@ export const BaseCard = ({
   title,
   description,
   created_at,
+  author,
   modalContent,
   downloadLink,
   downloadLabel = "Download",
@@ -74,9 +79,16 @@ export const BaseCard = ({
           </Text>
         )}
 
-        <Text fontSize="xs" color="gray.400">
-          {new Date(created_at).toLocaleDateString()}
-        </Text>
+        <HStack justify={"space-between"} w={"full"}>
+          <Text fontSize="xs" color="gray.400">
+            {new Date(created_at).toLocaleDateString()}
+          </Text>
+          {author && (
+            <Badge variant={"surface"} size={"md"} colorPalette={author.color}>
+              {author.username}
+            </Badge>
+          )}
+        </HStack>
       </VStack>
     </Box>
   );

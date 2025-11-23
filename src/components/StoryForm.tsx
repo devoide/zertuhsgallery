@@ -9,27 +9,41 @@ import {
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { uploadStory } from "../supabase/uploadStory";
+import { supabase } from "../supabase/client";
 
 interface FormValues {
   title: string;
   story: string;
+  author: string;
 }
 
 export const StoryForm = () => {
   const [isPending, startTransition] = useTransition();
-  const { register, handleSubmit, setValue } = useForm<FormValues>();
+  const { register, handleSubmit, setValue, reset } = useForm<FormValues>();
 
   const onSubmit = handleSubmit((data: FormValues) => {
     startTransition(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("no zertuh user");
+        return;
+      }
+
       const { success, error } = await uploadStory({
         title: data.title,
         story: data.story,
+        author: user.id,
       });
 
       if (!success) {
         console.error(error);
         return;
       }
+
+      reset();
     });
   });
   return (
