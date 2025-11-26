@@ -16,7 +16,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { DrawingCard } from "../components/DrawingCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StoryCard } from "../components/StoryCard";
 import { MusicCard } from "../components/MusicCard";
 import { ProfileEntry, type FeedItem } from "../supabase/types";
@@ -160,8 +160,13 @@ export function GalleryPage() {
             </Pagination.PrevTrigger>
 
             <Pagination.Context>
-              {({ pages }) =>
-                pages.map((page, index) => {
+              {({ pages }) => {
+                const lastPage =
+                  pages.filter((i) => i.type === "page").at(-1)?.value ?? 0;
+
+                return pages.map((page, index) => {
+                  const inputRef = useRef<HTMLInputElement>(null);
+
                   if (page.type === "page") {
                     return (
                       <Pagination.Item key={index} {...page} asChild>
@@ -177,7 +182,16 @@ export function GalleryPage() {
 
                   if (page.type === "ellipsis") {
                     return (
-                      <Popover.Root positioning={{ placement: "top" }}>
+                      <Popover.Root
+                        positioning={{ placement: "top" }}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            requestAnimationFrame(() => {
+                              inputRef.current?.select();
+                            });
+                          }
+                        }}
+                      >
                         <Popover.Trigger asChild>
                           <Pagination.Ellipsis
                             key={index}
@@ -195,6 +209,7 @@ export function GalleryPage() {
                               <Popover.Body width={"auto"}>
                                 <HStack width={"min-content"}>
                                   <Input
+                                    ref={inputRef}
                                     maxW={"1/3"}
                                     defaultValue={currentPage}
                                     onKeyDown={(e) => {
@@ -205,7 +220,8 @@ export function GalleryPage() {
                                         );
                                         if (
                                           !isNaN(value) &&
-                                          value <= pages.length
+                                          value > 0 &&
+                                          value <= lastPage
                                         ) {
                                           paginate(value);
                                         }
@@ -218,7 +234,8 @@ export function GalleryPage() {
                                       );
                                       if (
                                         !isNaN(value) &&
-                                        value <= pages.length
+                                        value > 0 &&
+                                        value <= lastPage
                                       ) {
                                         paginate(value);
                                       }
@@ -226,7 +243,7 @@ export function GalleryPage() {
                                   />
                                   <Text
                                     width={"max-content"}
-                                  >{`of ${pages.length}`}</Text>
+                                  >{`of ${lastPage}`}</Text>
                                 </HStack>
                               </Popover.Body>
                             </Popover.Content>
@@ -237,8 +254,8 @@ export function GalleryPage() {
                   }
 
                   return null;
-                })
-              }
+                });
+              }}
             </Pagination.Context>
 
             <Pagination.NextTrigger asChild>
