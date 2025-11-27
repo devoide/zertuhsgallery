@@ -113,7 +113,7 @@ export const BaseCard = ({
                     <Image src={src} alt={title} h={"100%"} w={"100%"} mb={4} />
                   )}
                   {description && (
-                    <Text fontSize="sm" color="gray.200">
+                    <Text fontSize="sm" color="gray.200" whiteSpace={"pre-wrap"}>
                       {description}
                     </Text>
                   )}
