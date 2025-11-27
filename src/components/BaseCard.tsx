@@ -74,6 +74,7 @@ export const BaseCard = ({
             color="gray.300"
             maxW="100%"
             wordBreak="break-word"
+            whiteSpace={"pre-wrap"}
           >
             {description}
           </Text>
