@@ -94,7 +94,7 @@ export function GalleryPage() {
         </Heading>
         {isLoggedIn && (
           <Button
-            variant={"solid"}
+            variant={"outline"}
             onClick={() => {
               navigate("/upload");
             }}

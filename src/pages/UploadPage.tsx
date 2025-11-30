@@ -36,7 +36,7 @@ export default function UploadPage() {
           Upload Zertuity
         </Heading>
         <Button
-          variant={"solid"}
+          variant={"outline"}
           onClick={() => {
             navigate("/");
           }}

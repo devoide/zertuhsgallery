@@ -67,7 +67,7 @@ export const StoryForm = () => {
           loading={isPending}
           loadingText={"Uploading"}
           type="submit"
-          variant={"solid"}
+          variant={"outline"}
         >
           Upload
         </Button>

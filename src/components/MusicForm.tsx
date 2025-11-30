@@ -107,7 +107,7 @@ export const MusicForm = () => {
           loading={isPending}
           loadingText={"Uploading"}
           type="submit"
-          variant={"solid"}
+          variant={"outline"}
         >
           Upload
         </Button>
