@@ -15,7 +15,7 @@ export async function uploadImage({ file, bucket, folder }: UploadProps) {
 
   try {
     const compressedFile = await imageCompression(file, {
-      maxSizeMB: 1,
+      maxSizeMB: 3,
     });
     const { error: uploadError } = await supabase.storage
       .from(bucket)
