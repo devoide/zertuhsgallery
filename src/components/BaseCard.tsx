@@ -82,7 +82,7 @@ export const BaseCard = ({
 
         <HStack justify={"space-between"} w={"full"}>
           <Text fontSize="xs" color="gray.400">
-            {new Date(created_at).toLocaleDateString()}
+            {new Date(created_at).toLocaleDateString("de-DE")}
           </Text>
           {author && (
             <Badge variant={"surface"} size={"md"} colorPalette={author.color}>
@@ -114,7 +114,11 @@ export const BaseCard = ({
                     <Image src={src} alt={title} h={"100%"} w={"100%"} mb={4} />
                   )}
                   {description && (
-                    <Text fontSize="sm" color="gray.200" whiteSpace={"pre-wrap"}>
+                    <Text
+                      fontSize="sm"
+                      color="gray.200"
+                      whiteSpace={"pre-wrap"}
+                    >
                       {description}
                     </Text>
                   )}
