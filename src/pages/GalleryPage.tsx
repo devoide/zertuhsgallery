@@ -86,6 +86,8 @@ export function GalleryPage() {
     );
   }
 
+  console.log(feedItems)
+
   return (
     <Container maxW={"6xl"} paddingY={10}>
       <HStack justify={"space-between"}>
@@ -137,6 +139,7 @@ export function GalleryPage() {
                   title={entry.data.title}
                   description={entry.data.description}
                   created_at={entry.created_at}
+                  coverSrc={entry.data.cover_url}
                   author={profile}
                 />
               );

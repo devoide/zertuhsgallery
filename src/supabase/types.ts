@@ -40,6 +40,7 @@ export type CompositionEntry = {
   title: string;
   description: string;
   audio_url: string;
+  cover_url: string;
   created_at: string;
   author: string;
 };

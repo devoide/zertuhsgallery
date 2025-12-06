@@ -105,9 +105,15 @@ export const BaseCard = ({
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{title}</Dialog.Title>
+              <Text fontWeight="bold" fontSize="xl">
+                {title}
+              </Text>
             </Dialog.Header>
-            <Dialog.Body mb={truncateLines == 20 ? 5 : 0}>
+            <Dialog.Body
+              mb={truncateLines == 20 ? 5 : 0}
+              justifyContent={"center"}
+              display={"flex"}
+            >
               {modalContent ?? (
                 <>
                   {src && (
