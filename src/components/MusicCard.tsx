@@ -79,7 +79,7 @@ export const MusicCard = memo(
                 />
               </Flex>
             )}
-            <audio controls style={{ width: "100%", marginBottom: "1rem" }}>
+            <audio controls style={{ width: "100%" }}>
               <source src={src} />
               ur browser old asf
             </audio>

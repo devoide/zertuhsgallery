@@ -114,22 +114,49 @@ export const BaseCard = ({
               justifyContent={"center"}
               display={"flex"}
             >
-              {modalContent ?? (
-                <>
-                  {src && (
-                    <Image src={src} alt={title} h={"100%"} w={"100%"} mb={4} />
-                  )}
-                  {description && (
-                    <Text
-                      fontSize="sm"
-                      color="gray.200"
-                      whiteSpace={"pre-wrap"}
+              <VStack width={"full"} align={"flex-start"}>
+                {modalContent ?? (
+                  <>
+                    {src && (
+                      <Image
+                        src={src}
+                        alt={title}
+                        h={"100%"}
+                        w={"100%"}
+                      />
+                    )}
+                    {description && (
+                      <Text
+                        fontSize="sm"
+                        color="gray.200"
+                        whiteSpace={"pre-wrap"}
+                      >
+                        {description}
+                      </Text>
+                    )}
+                  </>
+                )}
+                <VStack align={"flex-start"} w={"full"}>
+                  <Text fontSize="xs" color="gray.400">
+                    {new Date(created_at).toLocaleString("de-DE", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                  {author && (
+                    <Badge
+                      variant={"surface"}
+                      size={"md"}
+                      colorPalette={author.color}
                     >
-                      {description}
-                    </Text>
+                      {author.username}
+                    </Badge>
                   )}
-                </>
-              )}
+                </VStack>
+              </VStack>
             </Dialog.Body>
             {downloadLink && (
               <Dialog.Footer>
