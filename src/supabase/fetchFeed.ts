@@ -17,13 +17,13 @@ const typeToTable = {
 
 type TableName = (typeof typeToTable)[FeedType];
 
-export async function fetchFeedPage(page: number): Promise<FeedItem[]> {
+export async function fetchFeedPage(page: number, sort: boolean): Promise<FeedItem[]> {
   const offset = (page - 1) * PAGE_SIZE;
 
   const { data: feed, error } = await supabase
     .from("feed")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: !sort })
     .range(offset, offset + PAGE_SIZE - 1);
 
   if (!feed || error) {

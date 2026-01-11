@@ -158,15 +158,6 @@ export const BaseCard = ({
                 </VStack>
               </VStack>
             </Dialog.Body>
-            {downloadLink && (
-              <Dialog.Footer>
-                <Button asChild>
-                  <a href={downloadLink} target={"_blank"} download>
-                    {downloadLabel}
-                  </a>
-                </Button>
-              </Dialog.Footer>
-            )}
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

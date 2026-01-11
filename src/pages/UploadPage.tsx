@@ -31,20 +31,6 @@ export default function UploadPage() {
 
   return (
     <Container maxW={"6xl"} py={10}>
-      <HStack justify={"space-between"}>
-        <Heading mb={4} size={"4xl"} fontWeight={"bold"}>
-          Upload Zertuity
-        </Heading>
-        <Button
-          variant={"outline"}
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          Back
-        </Button>
-      </HStack>
-
       <Tabs.Root defaultValue="drawing">
         <Tabs.List>
           <Tabs.Trigger value="drawing">Drawing</Tabs.Trigger>

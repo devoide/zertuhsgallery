@@ -1,16 +1,15 @@
 import {
-  Button,
   ButtonGroup,
   Center,
   Container,
   Flex,
-  Heading,
   HStack,
   IconButton,
   Input,
   Pagination,
   Popover,
   Portal,
+  SegmentGroup,
   SimpleGrid,
   Spinner,
   Text,
@@ -23,8 +22,8 @@ import { ProfileEntry, type FeedItem } from "../supabase/types";
 import { supabase } from "../supabase/client";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { fetchProfiles } from "../supabase/fetchProfiles";
-import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { useSearchParams } from "react-router-dom";
+import { LuChevronLeft, LuChevronRight, LuFilter } from "react-icons/lu";
 
 const PAGE_SIZE = 15;
 
@@ -37,8 +36,11 @@ export function GalleryPage() {
   const [totalItems, setTotalItems] = useState(1);
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  let navigate = useNavigate();
+  const [sortNewest, setSortNewest] = useState(true);
+  const [jumpValue, setJumpValue] = useState(currentPage);
+  const [openEllipsisIndex, setOpenEllipsisIndex] = useState<number | null>(
+    null
+  );
 
   const paginate = (value: number | string) => {
     setSearchParams({ page: value.toString() });
@@ -61,93 +63,84 @@ export function GalleryPage() {
       setProfiles(profiles);
     }
     fetchPageCountNProfiles();
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setIsLoggedIn(true);
-    });
   }, []);
 
   useEffect(() => {
     async function loadPageData() {
       setLoading(true);
-      const data = await fetchFeedPage(currentPage);
+      const data = await fetchFeedPage(currentPage, sortNewest);
       setFeedItems(data);
       setLoading(false);
     }
 
     loadPageData();
+  }, [currentPage, sortNewest]);
+
+  useEffect(() => {
+    setJumpValue(currentPage);
   }, [currentPage]);
-
-  if (loading) {
-    return (
-      <Center h="100vh">
-        <Spinner size="xl" />
-      </Center>
-    );
-  }
-
-  console.log(feedItems)
 
   return (
     <Container maxW={"6xl"} paddingY={10}>
-      <HStack justify={"space-between"}>
-        <Heading mb={6} size={"4xl"} fontWeight={"bold"}>
-          Zertuh's Gallery
-        </Heading>
-        {isLoggedIn && (
-          <Button
-            variant={"outline"}
-            onClick={() => {
-              navigate("/upload");
-            }}
-          >
-            Upload
-          </Button>
-        )}
+      <HStack justify={"end"} mb={4}>
+        <SegmentGroup.Root
+          value={sortNewest ? "Newest" : "Oldest"}
+          onValueChange={(details) => setSortNewest(details.value === "Newest")}
+        >
+          <SegmentGroup.Indicator />
+          <SegmentGroup.Items items={["Newest", "Oldest"]} />
+        </SegmentGroup.Root>
       </HStack>
 
       <SimpleGrid columns={[1, 2, 3]} gap={6}>
-        {feedItems.map((entry) => {
-          const profile = profiles.find((p) => p.id === entry.data.author);
-          switch (entry.type) {
-            case "drawing":
-              return (
-                <DrawingCard
-                  key={`drawing-${entry.data.id}`}
-                  src={entry.data.image_url}
-                  title={entry.data.title}
-                  description={entry.data.description}
-                  created_at={entry.created_at}
-                  author={profile}
-                />
-              );
-            case "story":
-              return (
-                <StoryCard
-                  key={`story-${entry.data.id}`}
-                  title={entry.data.title}
-                  description={entry.data.content}
-                  created_at={entry.created_at}
-                  author={profile}
-                />
-              );
-            case "music":
-              return (
-                <MusicCard
-                  key={`music-${entry.data.id}`}
-                  src={entry.data.audio_url}
-                  title={entry.data.title}
-                  description={entry.data.description}
-                  created_at={entry.created_at}
-                  coverSrc={entry.data.cover_url}
-                  author={profile}
-                />
-              );
-            default:
-              return null;
-          }
-        })}
+        {loading ? (
+          <Center h="100vh">
+            <Spinner size="xl" />
+          </Center>
+        ) : (
+          feedItems.map((entry) => {
+            const profile = profiles.find((p) => p.id === entry.data.author);
+            switch (entry.type) {
+              case "drawing":
+                return (
+                  <DrawingCard
+                    key={`drawing-${entry.data.id}`}
+                    src={entry.data.image_url}
+                    title={entry.data.title}
+                    description={entry.data.description}
+                    created_at={entry.created_at}
+                    author={profile}
+                  />
+                );
+              case "story":
+                return (
+                  <StoryCard
+                    key={`story-${entry.data.id}`}
+                    title={entry.data.title}
+                    description={entry.data.content}
+                    created_at={entry.created_at}
+                    author={profile}
+                  />
+                );
+              case "music":
+                return (
+                  <MusicCard
+                    key={`music-${entry.data.id}`}
+                    src={entry.data.audio_url}
+                    title={entry.data.title}
+                    description={entry.data.description}
+                    created_at={entry.created_at}
+                    coverSrc={entry.data.cover_url}
+                    author={profile}
+                  />
+                );
+              default:
+                return null;
+            }
+          })
+        )}
       </SimpleGrid>
+      {/* PAGINATION ----------------------------------------------*/}
       <Flex mt={8} justify={"center"}>
         <Pagination.Root
           count={totalItems}
@@ -168,8 +161,6 @@ export function GalleryPage() {
                   pages.filter((i) => i.type === "page").at(-1)?.value ?? 0;
 
                 return pages.map((page, index) => {
-                  const inputRef = useRef<HTMLInputElement>(null);
-
                   if (page.type === "page") {
                     return (
                       <Pagination.Item key={index} {...page} asChild>
@@ -188,11 +179,7 @@ export function GalleryPage() {
                       <Popover.Root
                         positioning={{ placement: "top" }}
                         onOpenChange={(open) => {
-                          if (open) {
-                            requestAnimationFrame(() => {
-                              inputRef.current?.select();
-                            });
-                          }
+                          setOpenEllipsisIndex(open ? index : null);
                         }}
                       >
                         <Popover.Trigger asChild>
@@ -212,21 +199,21 @@ export function GalleryPage() {
                               <Popover.Body width={"auto"}>
                                 <HStack width={"min-content"}>
                                   <Input
-                                    ref={inputRef}
-                                    maxW={"1/3"}
-                                    defaultValue={currentPage}
+                                    value={jumpValue}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    onChange={(e) =>
+                                      setJumpValue(
+                                        Number(e.currentTarget.value)
+                                      )
+                                    }
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") {
-                                        const value = parseInt(
-                                          e.currentTarget.value,
-                                          10
-                                        );
                                         if (
-                                          !isNaN(value) &&
-                                          value > 0 &&
-                                          value <= lastPage
+                                          jumpValue > 0 &&
+                                          jumpValue <= lastPage
                                         ) {
-                                          paginate(value);
+                                          setOpenEllipsisIndex(null);
+                                          paginate(jumpValue);
                                         }
                                       }
                                     }}
@@ -242,7 +229,9 @@ export function GalleryPage() {
                                       ) {
                                         paginate(value);
                                       }
+                                      setOpenEllipsisIndex(null);
                                     }}
+                                    w="60px"
                                   />
                                   <Text
                                     width={"max-content"}
@@ -274,5 +263,6 @@ export function GalleryPage() {
 }
 //TODO: edit and delete function for zertuhs. sort by old (add button for sort) add filter function
 //TODO: add mosaic gallery style.
+//TODO: organize page lo
 
 export default GalleryPage;
