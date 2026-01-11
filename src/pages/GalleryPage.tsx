@@ -91,173 +91,175 @@ export function GalleryPage() {
           <SegmentGroup.Items items={["Newest", "Oldest"]} />
         </SegmentGroup.Root>
       </HStack>
-
-      <SimpleGrid columns={[1, 2, 3]} gap={6}>
-        {loading ? (
-          <Center h="100vh">
-            <Spinner size="xl" />
-          </Center>
-        ) : (
-          feedItems.map((entry) => {
-            const profile = profiles.find((p) => p.id === entry.data.author);
-            switch (entry.type) {
-              case "drawing":
-                return (
-                  <DrawingCard
-                    key={`drawing-${entry.data.id}`}
-                    src={entry.data.image_url}
-                    title={entry.data.title}
-                    description={entry.data.description}
-                    created_at={entry.created_at}
-                    author={profile}
-                  />
-                );
-              case "story":
-                return (
-                  <StoryCard
-                    key={`story-${entry.data.id}`}
-                    title={entry.data.title}
-                    description={entry.data.content}
-                    created_at={entry.created_at}
-                    author={profile}
-                  />
-                );
-              case "music":
-                return (
-                  <MusicCard
-                    key={`music-${entry.data.id}`}
-                    src={entry.data.audio_url}
-                    title={entry.data.title}
-                    description={entry.data.description}
-                    created_at={entry.created_at}
-                    coverSrc={entry.data.cover_url}
-                    author={profile}
-                  />
-                );
-              default:
-                return null;
-            }
-          })
-        )}
-      </SimpleGrid>
-      {/* PAGINATION ----------------------------------------------*/}
-      <Flex mt={8} justify={"center"}>
-        <Pagination.Root
-          count={totalItems}
-          pageSize={PAGE_SIZE}
-          page={currentPage}
-          onPageChange={(e) => paginate(e.page)}
-        >
-          <ButtonGroup variant="outline" attached size="md">
-            <Pagination.PrevTrigger asChild>
-              <IconButton>
-                <LuChevronLeft />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Context>
-              {({ pages }) => {
-                const lastPage =
-                  pages.filter((i) => i.type === "page").at(-1)?.value ?? 0;
-
-                return pages.map((page, index) => {
-                  if (page.type === "page") {
-                    return (
-                      <Pagination.Item key={index} {...page} asChild>
-                        <IconButton
-                          variant={{ base: "outline", _selected: "solid" }}
-                          borderRadius={0}
-                        >
-                          {page.value}
-                        </IconButton>
-                      </Pagination.Item>
-                    );
-                  }
-
-                  if (page.type === "ellipsis") {
-                    return (
-                      <Popover.Root
-                        positioning={{ placement: "top" }}
-                        onOpenChange={(open) => {
-                          setOpenEllipsisIndex(open ? index : null);
-                        }}
-                      >
-                        <Popover.Trigger asChild>
-                          <Pagination.Ellipsis
-                            key={index}
-                            index={index}
-                            asChild
-                          >
-                            <IconButton variant="outline" borderRadius={0}>
-                              …
-                            </IconButton>
-                          </Pagination.Ellipsis>
-                        </Popover.Trigger>
-                        <Portal>
-                          <Popover.Positioner>
-                            <Popover.Content bg={"gray.800"} width={"auto"}>
-                              <Popover.Body width={"auto"}>
-                                <HStack width={"min-content"}>
-                                  <Input
-                                    value={jumpValue}
-                                    onFocus={(e) => e.currentTarget.select()}
-                                    onChange={(e) =>
-                                      setJumpValue(
-                                        Number(e.currentTarget.value)
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        if (
-                                          jumpValue > 0 &&
-                                          jumpValue <= lastPage
-                                        ) {
-                                          setOpenEllipsisIndex(null);
-                                          paginate(jumpValue);
-                                        }
-                                      }
-                                    }}
-                                    onBlur={(e) => {
-                                      const value = parseInt(
-                                        e.currentTarget.value,
-                                        10
-                                      );
-                                      if (
-                                        !isNaN(value) &&
-                                        value > 0 &&
-                                        value <= lastPage
-                                      ) {
-                                        paginate(value);
-                                      }
-                                      setOpenEllipsisIndex(null);
-                                    }}
-                                    w="60px"
-                                  />
-                                  <Text
-                                    width={"max-content"}
-                                  >{`of ${lastPage}`}</Text>
-                                </HStack>
-                              </Popover.Body>
-                            </Popover.Content>
-                          </Popover.Positioner>
-                        </Portal>
-                      </Popover.Root>
-                    );
-                  }
-
+      {loading ? (
+        <Center h="80vh" w={"full"}>
+          <Spinner size="xl" />
+        </Center>
+      ) : (
+        <>
+          <SimpleGrid columns={[1, 2, 3]} gap={6}>
+            {feedItems.map((entry) => {
+              const profile = profiles.find((p) => p.id === entry.data.author);
+              switch (entry.type) {
+                case "drawing":
+                  return (
+                    <DrawingCard
+                      key={`drawing-${entry.data.id}`}
+                      src={entry.data.image_url}
+                      title={entry.data.title}
+                      description={entry.data.description}
+                      created_at={entry.created_at}
+                      author={profile}
+                    />
+                  );
+                case "story":
+                  return (
+                    <StoryCard
+                      key={`story-${entry.data.id}`}
+                      title={entry.data.title}
+                      description={entry.data.content}
+                      created_at={entry.created_at}
+                      author={profile}
+                    />
+                  );
+                case "music":
+                  return (
+                    <MusicCard
+                      key={`music-${entry.data.id}`}
+                      src={entry.data.audio_url}
+                      title={entry.data.title}
+                      description={entry.data.description}
+                      created_at={entry.created_at}
+                      coverSrc={entry.data.cover_url}
+                      author={profile}
+                    />
+                  );
+                default:
                   return null;
-                });
-              }}
-            </Pagination.Context>
+              }
+            })}
+          </SimpleGrid>
+          <Flex mt={8} justify={"center"}>
+            <Pagination.Root
+              count={totalItems}
+              pageSize={PAGE_SIZE}
+              page={currentPage}
+              onPageChange={(e) => paginate(e.page)}
+            >
+              <ButtonGroup variant="outline" attached size="md">
+                <Pagination.PrevTrigger asChild>
+                  <IconButton>
+                    <LuChevronLeft />
+                  </IconButton>
+                </Pagination.PrevTrigger>
 
-            <Pagination.NextTrigger asChild>
-              <IconButton>
-                <LuChevronRight />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      </Flex>
+                <Pagination.Context>
+                  {({ pages }) => {
+                    const lastPage =
+                      pages.filter((i) => i.type === "page").at(-1)?.value ?? 0;
+
+                    return pages.map((page, index) => {
+                      if (page.type === "page") {
+                        return (
+                          <Pagination.Item key={index} {...page} asChild>
+                            <IconButton
+                              variant={{ base: "outline", _selected: "solid" }}
+                              borderRadius={0}
+                            >
+                              {page.value}
+                            </IconButton>
+                          </Pagination.Item>
+                        );
+                      }
+
+                      if (page.type === "ellipsis") {
+                        return (
+                          <Popover.Root
+                            positioning={{ placement: "top" }}
+                            onOpenChange={(open) => {
+                              setOpenEllipsisIndex(open ? index : null);
+                            }}
+                          >
+                            <Popover.Trigger asChild>
+                              <Pagination.Ellipsis
+                                key={index}
+                                index={index}
+                                asChild
+                              >
+                                <IconButton variant="outline" borderRadius={0}>
+                                  …
+                                </IconButton>
+                              </Pagination.Ellipsis>
+                            </Popover.Trigger>
+                            <Portal>
+                              <Popover.Positioner>
+                                <Popover.Content bg={"gray.800"} width={"auto"}>
+                                  <Popover.Body width={"auto"}>
+                                    <HStack width={"min-content"}>
+                                      <Input
+                                        value={jumpValue}
+                                        onFocus={(e) =>
+                                          e.currentTarget.select()
+                                        }
+                                        onChange={(e) =>
+                                          setJumpValue(
+                                            Number(e.currentTarget.value)
+                                          )
+                                        }
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            if (
+                                              jumpValue > 0 &&
+                                              jumpValue <= lastPage
+                                            ) {
+                                              setOpenEllipsisIndex(null);
+                                              paginate(jumpValue);
+                                            }
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          const value = parseInt(
+                                            e.currentTarget.value,
+                                            10
+                                          );
+                                          if (
+                                            !isNaN(value) &&
+                                            value > 0 &&
+                                            value <= lastPage
+                                          ) {
+                                            paginate(value);
+                                          }
+                                          setOpenEllipsisIndex(null);
+                                        }}
+                                        w="60px"
+                                      />
+                                      <Text
+                                        width={"max-content"}
+                                      >{`of ${lastPage}`}</Text>
+                                    </HStack>
+                                  </Popover.Body>
+                                </Popover.Content>
+                              </Popover.Positioner>
+                            </Portal>
+                          </Popover.Root>
+                        );
+                      }
+
+                      return null;
+                    });
+                  }}
+                </Pagination.Context>
+
+                <Pagination.NextTrigger asChild>
+                  <IconButton>
+                    <LuChevronRight />
+                  </IconButton>
+                </Pagination.NextTrigger>
+              </ButtonGroup>
+            </Pagination.Root>
+          </Flex>
+        </>
+      )}
     </Container>
   );
 }
