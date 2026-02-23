@@ -114,7 +114,7 @@ export const BaseCard = ({
               justifyContent={"center"}
               display={"flex"}
             >
-              <VStack width={"full"} align={"flex-start"}>
+              <VStack width={"full"} align={"flex-start"} gap={2}>
                 {modalContent ?? (
                   <>
                     {src && (

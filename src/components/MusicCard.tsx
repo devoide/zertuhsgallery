@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { BaseCard } from "./BaseCard";
-import { Text, Image, Flex, VStack, Container, Box } from "@chakra-ui/react";
+import { Text, Image, Flex, VStack, Box } from "@chakra-ui/react";
 import { ProfileEntry } from "../supabase/types";
 
 interface MusicCardProps {
@@ -79,20 +79,22 @@ export const MusicCard = memo(
                 />
               </Flex>
             )}
-            <audio controls style={{ width: "100%" }}>
-              <source src={src} />
-              ur browser old asf
-            </audio>
-            {description && (
-              <Box width={"full"}>
-                <Text fontSize="sm" color="gray.200">
-                  {description}
-                </Text>
-              </Box>
-            )}
+            <VStack gap={2} width={"full"}>
+              <audio controls style={{ width: "100%" }}>
+                <source src={src} />
+                ur browser old asf
+              </audio>
+              {description && (
+                <Box width={"full"}>
+                  <Text fontSize="sm" color="gray.200">
+                    {description}
+                  </Text>
+                </Box>
+              )}
+            </VStack>
           </VStack>
         }
       />
     );
-  }
+  },
 );
