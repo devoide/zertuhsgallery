@@ -86,7 +86,7 @@ export const MusicCard = memo(
               </audio>
               {description && (
                 <Box width={"full"}>
-                  <Text fontSize="sm" color="gray.200">
+                  <Text fontSize="sm" color="gray.200" whiteSpace={"pre-wrap"}>
                     {description}
                   </Text>
                 </Box>

@@ -1,16 +1,13 @@
 import {
   Badge,
   Box,
-  Button,
   CloseButton,
   Dialog,
   Flex,
-  Heading,
   HStack,
   Image,
   Portal,
   Text,
-  useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import type { ReactNode } from "react";
@@ -36,8 +33,6 @@ export const BaseCard = ({
   created_at,
   author,
   modalContent,
-  downloadLink,
-  downloadLabel = "Download",
   truncateLines,
   previewContent,
 }: BaseCardProps) => {
