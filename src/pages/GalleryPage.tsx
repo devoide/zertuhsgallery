@@ -1,29 +1,19 @@
+import { useEffect, useState } from "react";
 import {
-  ButtonGroup,
   Center,
   Container,
   Flex,
   HStack,
-  IconButton,
-  Input,
-  Pagination,
-  Popover,
-  Portal,
   SegmentGroup,
-  SimpleGrid,
   Spinner,
-  Text,
 } from "@chakra-ui/react";
-import { DrawingCard } from "../components/DrawingCard";
-import { useEffect, useRef, useState } from "react";
-import { StoryCard } from "../components/StoryCard";
-import { MusicCard } from "../components/MusicCard";
 import { ProfileEntry, type FeedItem } from "../supabase/types";
 import { supabase } from "../supabase/client";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { fetchProfiles } from "../supabase/fetchProfiles";
 import { useSearchParams } from "react-router-dom";
-import { LuChevronLeft, LuChevronRight, LuFilter } from "react-icons/lu";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { Pagination, DrawingCard, StoryCard, MusicCard } from "../components";
 
 const PAGE_SIZE = 15;
 
@@ -41,10 +31,6 @@ export function GalleryPage() {
   const [openEllipsisIndex, setOpenEllipsisIndex] = useState<number | null>(
     null
   );
-
-  const paginate = (value: number | string) => {
-    setSearchParams({ page: value.toString() });
-  };
 
   useEffect(() => {
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -97,166 +83,66 @@ export function GalleryPage() {
         </Center>
       ) : (
         <>
-          <SimpleGrid columns={[1, 2, 3]} gap={6}>
-            {feedItems.map((entry) => {
-              const profile = profiles.find((p) => p.id === entry.data.author);
-              switch (entry.type) {
-                case "drawing":
-                  return (
-                    <DrawingCard
-                      key={`drawing-${entry.data.id}`}
-                      src={entry.data.image_url}
-                      title={entry.data.title}
-                      description={entry.data.description}
-                      created_at={entry.created_at}
-                      author={profile}
-                    />
-                  );
-                case "story":
-                  return (
-                    <StoryCard
-                      key={`story-${entry.data.id}`}
-                      title={entry.data.title}
-                      description={entry.data.content}
-                      created_at={entry.created_at}
-                      author={profile}
-                    />
-                  );
-                case "music":
-                  return (
-                    <MusicCard
-                      key={`music-${entry.data.id}`}
-                      src={entry.data.audio_url}
-                      title={entry.data.title}
-                      description={entry.data.description}
-                      created_at={entry.created_at}
-                      coverSrc={entry.data.cover_url}
-                      author={profile}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })}
-          </SimpleGrid>
+          <ResponsiveMasonry
+            columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}
+            gutterBreakPoints={{ 350: "24px", 750: "24px", 900: "24px" }}
+          >
+            <Masonry>
+              {feedItems.map((entry) => {
+                const profile = profiles.find(
+                  (p) => p.id === entry.data.author
+                );
+                switch (entry.type) {
+                  case "drawing":
+                    return (
+                      <DrawingCard
+                        key={`drawing-${entry.data.id}`}
+                        src={entry.data.image_url}
+                        title={entry.data.title}
+                        description={entry.data.description}
+                        created_at={entry.created_at}
+                        author={profile}
+                      />
+                    );
+                  case "story":
+                    return (
+                      <StoryCard
+                        key={`story-${entry.data.id}`}
+                        title={entry.data.title}
+                        description={entry.data.content}
+                        created_at={entry.created_at}
+                        author={profile}
+                      />
+                    );
+                  case "music":
+                    return (
+                      <MusicCard
+                        key={`music-${entry.data.id}`}
+                        src={entry.data.audio_url}
+                        title={entry.data.title}
+                        description={entry.data.description}
+                        created_at={entry.created_at}
+                        coverSrc={entry.data.cover_url}
+                        author={profile}
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              })}
+            </Masonry>
+          </ResponsiveMasonry>
           <Flex mt={8} justify={"center"}>
-            <Pagination.Root
-              count={totalItems}
+            <Pagination
+              totalItems={totalItems}
               pageSize={PAGE_SIZE}
-              page={currentPage}
-              onPageChange={(e) => paginate(e.page)}
-            >
-              <ButtonGroup variant="outline" attached size="md">
-                <Pagination.PrevTrigger asChild>
-                  <IconButton>
-                    <LuChevronLeft />
-                  </IconButton>
-                </Pagination.PrevTrigger>
-
-                <Pagination.Context>
-                  {({ pages }) => {
-                    const lastPage =
-                      pages.filter((i) => i.type === "page").at(-1)?.value ?? 0;
-
-                    return pages.map((page, index) => {
-                      if (page.type === "page") {
-                        return (
-                          <Pagination.Item key={index} {...page} asChild>
-                            <IconButton
-                              variant={{ base: "outline", _selected: "solid" }}
-                              borderRadius={0}
-                            >
-                              {page.value}
-                            </IconButton>
-                          </Pagination.Item>
-                        );
-                      }
-
-                      if (page.type === "ellipsis") {
-                        return (
-                          <Popover.Root
-                            positioning={{ placement: "top" }}
-                            onOpenChange={(open) => {
-                              setOpenEllipsisIndex(open ? index : null);
-                            }}
-                          >
-                            <Popover.Trigger asChild>
-                              <Pagination.Ellipsis
-                                key={index}
-                                index={index}
-                                asChild
-                              >
-                                <IconButton variant="outline" borderRadius={0}>
-                                  …
-                                </IconButton>
-                              </Pagination.Ellipsis>
-                            </Popover.Trigger>
-                            <Portal>
-                              <Popover.Positioner>
-                                <Popover.Content bg={"gray.800"} width={"auto"}>
-                                  <Popover.Body width={"auto"}>
-                                    <HStack width={"min-content"}>
-                                      <Input
-                                        value={jumpValue}
-                                        onFocus={(e) =>
-                                          e.currentTarget.select()
-                                        }
-                                        onChange={(e) =>
-                                          setJumpValue(
-                                            Number(e.currentTarget.value)
-                                          )
-                                        }
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter") {
-                                            if (
-                                              jumpValue > 0 &&
-                                              jumpValue <= lastPage
-                                            ) {
-                                              setOpenEllipsisIndex(null);
-                                              paginate(jumpValue);
-                                            }
-                                          }
-                                        }}
-                                        onBlur={(e) => {
-                                          const value = parseInt(
-                                            e.currentTarget.value,
-                                            10
-                                          );
-                                          if (
-                                            !isNaN(value) &&
-                                            value > 0 &&
-                                            value <= lastPage
-                                          ) {
-                                            paginate(value);
-                                          }
-                                          setOpenEllipsisIndex(null);
-                                        }}
-                                        w="60px"
-                                      />
-                                      <Text
-                                        width={"max-content"}
-                                      >{`of ${lastPage}`}</Text>
-                                    </HStack>
-                                  </Popover.Body>
-                                </Popover.Content>
-                              </Popover.Positioner>
-                            </Portal>
-                          </Popover.Root>
-                        );
-                      }
-
-                      return null;
-                    });
-                  }}
-                </Pagination.Context>
-
-                <Pagination.NextTrigger asChild>
-                  <IconButton>
-                    <LuChevronRight />
-                  </IconButton>
-                </Pagination.NextTrigger>
-              </ButtonGroup>
-            </Pagination.Root>
+              currentPage={currentPage}
+              setSearchParams={setSearchParams}
+              jumpValue={jumpValue}
+              setJumpValue={setJumpValue}
+              openEllipsisIndex={openEllipsisIndex}
+              setOpenEllipsisIndex={setOpenEllipsisIndex}
+            />
           </Flex>
         </>
       )}

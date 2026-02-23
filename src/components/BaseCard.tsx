@@ -37,7 +37,7 @@ export const BaseCard = ({
   previewContent,
 }: BaseCardProps) => {
   const content = (
-    <Box bg="gray.800" rounded="md" overflow="hidden" cursor="pointer">
+    <Box bg="gray.800" rounded="md" overflow="hidden" cursor="pointer" width={"full"}>
       {previewContent ??
         (src && (
           <Flex
