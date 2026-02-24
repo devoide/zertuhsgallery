@@ -5,6 +5,7 @@ import {
   Flex,
   HStack,
   SegmentGroup,
+  SimpleGrid,
   Spinner,
 } from "@chakra-ui/react";
 import { ProfileEntry, type FeedItem } from "../supabase/types";
@@ -12,7 +13,6 @@ import { supabase } from "../supabase/client";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { fetchProfiles } from "../supabase/fetchProfiles";
 import { useSearchParams } from "react-router-dom";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { Pagination, DrawingCard, StoryCard, MusicCard } from "../components";
 
 const PAGE_SIZE = 15;
@@ -29,7 +29,7 @@ export function GalleryPage() {
   const [sortNewest, setSortNewest] = useState(true);
   const [jumpValue, setJumpValue] = useState(currentPage);
   const [openEllipsisIndex, setOpenEllipsisIndex] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -83,55 +83,48 @@ export function GalleryPage() {
         </Center>
       ) : (
         <>
-          <ResponsiveMasonry
-            columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}
-            gutterBreakPoints={{ 350: "24px", 750: "24px", 900: "24px" }}
-          >
-            <Masonry>
-              {feedItems.map((entry) => {
-                const profile = profiles.find(
-                  (p) => p.id === entry.data.author
-                );
-                switch (entry.type) {
-                  case "drawing":
-                    return (
-                      <DrawingCard
-                        key={`drawing-${entry.data.id}`}
-                        src={entry.data.image_url}
-                        title={entry.data.title}
-                        description={entry.data.description}
-                        created_at={entry.created_at}
-                        author={profile}
-                      />
-                    );
-                  case "story":
-                    return (
-                      <StoryCard
-                        key={`story-${entry.data.id}`}
-                        title={entry.data.title}
-                        description={entry.data.content}
-                        created_at={entry.created_at}
-                        author={profile}
-                      />
-                    );
-                  case "music":
-                    return (
-                      <MusicCard
-                        key={`music-${entry.data.id}`}
-                        src={entry.data.audio_url}
-                        title={entry.data.title}
-                        description={entry.data.description}
-                        created_at={entry.created_at}
-                        coverSrc={entry.data.cover_url}
-                        author={profile}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })}
-            </Masonry>
-          </ResponsiveMasonry>
+          <SimpleGrid columns={[1, 2, 3]} gap={6}>
+            {feedItems.map((entry) => {
+              const profile = profiles.find((p) => p.id === entry.data.author);
+              switch (entry.type) {
+                case "drawing":
+                  return (
+                    <DrawingCard
+                      key={`drawing-${entry.data.id}`}
+                      src={entry.data.image_url}
+                      title={entry.data.title}
+                      description={entry.data.description}
+                      created_at={entry.created_at}
+                      author={profile}
+                    />
+                  );
+                case "story":
+                  return (
+                    <StoryCard
+                      key={`story-${entry.data.id}`}
+                      title={entry.data.title}
+                      description={entry.data.content}
+                      created_at={entry.created_at}
+                      author={profile}
+                    />
+                  );
+                case "music":
+                  return (
+                    <MusicCard
+                      key={`music-${entry.data.id}`}
+                      src={entry.data.audio_url}
+                      title={entry.data.title}
+                      description={entry.data.description}
+                      created_at={entry.created_at}
+                      coverSrc={entry.data.cover_url}
+                      author={profile}
+                    />
+                  );
+                default:
+                  return null;
+              }
+            })}
+          </SimpleGrid>
           <Flex mt={8} justify={"center"}>
             <Pagination
               totalItems={totalItems}
