@@ -1,7 +1,6 @@
 import { memo, useMemo } from "react";
 import { BaseCard } from "./BaseCard";
 import { Text, Image, Flex, VStack, Box } from "@chakra-ui/react";
-import { LuMusic } from "react-icons/lu";
 import { ProfileEntry } from "../supabase/types";
 import { MiniPlayer, type Track } from "../audio";
 
@@ -39,7 +38,7 @@ export const MusicCard = memo(
         truncateLines={2}
         previewContent={
           <Box>
-            {coverSrc ? (
+            {coverSrc && (
               <Flex
                 height={"256px"}
                 align={"center"}
@@ -54,17 +53,6 @@ export const MusicCard = memo(
                   h={"100%"}
                   w={"100%"}
                 />
-              </Flex>
-            ) : (
-              <Flex
-                height={"120px"}
-                align={"center"}
-                justify={"center"}
-                bg={"gray.700"}
-                color={"gray.500"}
-                fontSize={"4xl"}
-              >
-                <LuMusic />
               </Flex>
             )}
             {/* 44px tall: 256px cover + 44px = 300px, same as drawing cards */}
