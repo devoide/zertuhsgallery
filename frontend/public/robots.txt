@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+# private/app pages, nothing to index there
+Disallow: /upload
+Disallow: /profile
+Disallow: /zertuh
+
+Sitemap: https://zertuhsgallery.xyz/sitemap.xml
