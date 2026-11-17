@@ -1,21 +1,21 @@
-import { Button, Heading, HStack, useBreakpointValue } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { supabase } from "../supabase/client";
+import {
+  Avatar,
+  Button,
+  Heading,
+  HStack,
+  Text,
+  useBreakpointValue,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useCurrentUser } from "../auth";
 
 export const Navigation = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  let navigate = useNavigate();
+  const { userId, profile } = useCurrentUser();
+  const navigate = useNavigate();
   const paddingX = useBreakpointValue({
     base: 4,
     md: 10,
   });
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setIsLoggedIn(true);
-    });
-  }, []);
 
   return (
     <HStack
@@ -36,15 +36,33 @@ export const Navigation = () => {
       >
         Zertuh's Gallery
       </Heading>
-      {isLoggedIn && (
-        <Button
-          variant={"outline"}
-          onClick={() => {
-            navigate("/upload");
-          }}
-        >
-          Upload
-        </Button>
+      {userId && (
+        <HStack gap={3}>
+          <Button
+            variant={"outline"}
+            onClick={() => {
+              navigate("/upload");
+            }}
+          >
+            Upload
+          </Button>
+          <Button
+            variant={"ghost"}
+            px={2}
+            gap={2}
+            onClick={() => navigate("/profile")}
+            aria-label="Profile"
+          >
+            <Avatar.Root size={"sm"} colorPalette={profile?.color ?? "gray"}>
+              <Avatar.Fallback name={profile?.username} />
+              {profile?.avatar_url && <Avatar.Image src={profile.avatar_url} />}
+            </Avatar.Root>
+            {/* name hidden on small screens to keep the header on one line */}
+            <Text display={{ base: "none", md: "block" }}>
+              {profile?.username}
+            </Text>
+          </Button>
+        </HStack>
       )}
     </HStack>
   );

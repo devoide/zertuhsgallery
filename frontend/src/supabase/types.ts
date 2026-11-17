@@ -49,4 +49,5 @@ export type ProfileEntry = {
   id: string;
   username: string;
   color: string;
+  avatar_url?: string | null;
 };

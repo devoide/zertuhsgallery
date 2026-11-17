@@ -7,7 +7,8 @@ export async function fetchProfiles(): Promise<ProfileEntry[]> {
 
   const { data: profiles, error } = await supabase
     .from("profiles")
-    .select("*")
+    // explicit columns: don't pull every user's email into the browser
+    .select("id, username, color, avatar_url")
 
   if (!profiles || error) {
     console.error("Error fetching profiles:", error?.message);

@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   CloseButton,
   Dialog,
@@ -13,6 +12,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { ProfileEntry } from "../supabase/types";
 import { PostEditForm, PostOwnerActions, type PostManage } from "./PostActions";
+import { AuthorBadge } from "./AuthorBadge";
 
 interface BaseCardProps {
   src?: string;
@@ -88,11 +88,7 @@ export const BaseCard = ({
           <Text fontSize="xs" color="gray.400">
             {new Date(created_at).toLocaleDateString("de-DE")}
           </Text>
-          {author && (
-            <Badge variant={"surface"} size={"md"} colorPalette={author.color}>
-              {author.username}
-            </Badge>
-          )}
+          {author && <AuthorBadge author={author} />}
         </HStack>
       </VStack>
     </Box>
@@ -160,15 +156,7 @@ export const BaseCard = ({
                         minute: "2-digit",
                       })}
                     </Text>
-                    {author && (
-                      <Badge
-                        variant={"surface"}
-                        size={"md"}
-                        colorPalette={author.color}
-                      >
-                        {author.username}
-                      </Badge>
-                    )}
+                    {author && <AuthorBadge author={author} />}
                   </VStack>
                   {manage && (
                     <PostOwnerActions

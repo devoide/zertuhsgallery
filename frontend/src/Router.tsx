@@ -5,6 +5,7 @@ import UploadPage from "./pages/UploadPage";
 import NotFound from "./pages/NotFound";
 import { ZertuhPage } from "./pages/ZertuhPage";
 import { Layout } from "./pages/Layout";
+import { ProfilePage } from "./pages/ProfilePage";
 
 export const AppRoute = () => {
   return (
@@ -14,6 +15,7 @@ export const AppRoute = () => {
           <Route path="/" element={<GalleryPage />} />
           <Route path="upload" element={<UploadPage />} />
           <Route path="zertuh" element={<ZertuhPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

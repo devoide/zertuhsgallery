@@ -16,7 +16,7 @@ import type { FeedItem, FeedType, ProfileEntry } from "../supabase/types";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { fetchProfiles } from "../supabase/fetchProfiles";
 import { deletePost, updatePost } from "../supabase/managePosts";
-import { useCurrentUserId } from "../supabase/useCurrentUserId";
+import { useCurrentUserId } from "../auth";
 import type { PostManage } from "../components/PostActions";
 import { useSearchParams } from "react-router-dom";
 import {
