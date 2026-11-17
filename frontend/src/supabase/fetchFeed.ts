@@ -5,6 +5,7 @@ import type {
   ImageEntry,
   StoryEntry,
   CompositionEntry,
+  VideoEntry,
 } from "./types";
 
 const PAGE_SIZE = 15;
@@ -13,6 +14,7 @@ const typeToTable = {
   drawing: "images",
   music: "compositions",
   story: "stories",
+  video: "videos",
 } as const;
 
 // text columns searched per table
@@ -20,9 +22,10 @@ const searchColumns: Record<FeedType, string[]> = {
   drawing: ["title", "description"],
   music: ["title", "description"],
   story: ["title", "content"],
+  video: ["title", "description"],
 };
 
-const ALL_TYPES: FeedType[] = ["drawing", "music", "story"];
+const ALL_TYPES: FeedType[] = ["drawing", "music", "story", "video"];
 
 type TableName = (typeof typeToTable)[FeedType];
 
@@ -66,7 +69,12 @@ async function searchRefIds(
     }),
   );
 
-  const ids: Record<FeedType, string[]> = { drawing: [], music: [], story: [] };
+  const ids: Record<FeedType, string[]> = {
+    drawing: [],
+    music: [],
+    story: [],
+    video: [],
+  };
   results.forEach(([type, list]) => (ids[type] = list));
   return ids;
 }
@@ -112,6 +120,7 @@ export async function fetchFeedPage(
     drawing: [],
     music: [],
     story: [],
+    video: [],
   };
 
   feed.forEach((entry) => {
@@ -121,15 +130,17 @@ export async function fetchFeedPage(
     }
   });
 
-  const [images, compositions, stories] = await Promise.all([
+  const [images, compositions, stories, videos] = await Promise.all([
     fetchEntriesByIds("images", idsByType.drawing),
     fetchEntriesByIds("compositions", idsByType.music),
     fetchEntriesByIds("stories", idsByType.story),
+    fetchEntriesByIds("videos", idsByType.video),
   ]);
 
   const imageMap = new Map(images.map((i) => [i.id, i]));
   const compositionMap = new Map(compositions.map((c) => [c.id, c]));
   const storyMap = new Map(stories.map((s) => [s.id, s]));
+  const videoMap = new Map(videos.map((v) => [v.id, v]));
 
   const hydrated: FeedItem[] = feed
     .map((entry) => {
@@ -149,6 +160,12 @@ export async function fetchFeedPage(
 
       if (type === "story") {
         const data = storyMap.get(ref_id) as StoryEntry | undefined;
+        if (!data) return null;
+        return { type, data, created_at };
+      }
+
+      if (type === "video") {
+        const data = videoMap.get(ref_id) as VideoEntry | undefined;
         if (!data) return null;
         return { type, data, created_at };
       }

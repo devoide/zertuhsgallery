@@ -24,6 +24,7 @@ import {
   DrawingCard,
   StoryCard,
   MusicCard,
+  VideoCard,
   FilterMenu,
 } from "../components";
 import {
@@ -103,9 +104,10 @@ export function GalleryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorFilter, typeFilter, search, sortNewest]);
 
-  // music on this page = the queue for next/previous. At its end the player
-  // calls loadMore, which fetches the following pages (same sort + filters)
-  // until one has music, so playback carries on past this page.
+  // music on this page = the queue for next/previous. At either end the
+  // player calls loadMore/loadPrev, which fetch the following/preceding pages
+  // (same sort + filters) until one has music, so playback carries on past
+  // this page in both directions.
   const pageTracks = useMemo<TrackList>(() => {
     const filters = { author: authorFilter, type: typeFilter, search };
     const lastPage = Math.ceil(totalItems / PAGE_SIZE);
@@ -119,6 +121,18 @@ export function GalleryPage() {
         }
         return null;
       },
+      // only offered when there are earlier pages at all
+      loadPrev:
+        page > 1
+          ? async () => {
+              for (let p = page - 1; p >= 1; p--) {
+                const { items } = await fetchFeedPage(p, sortNewest, filters);
+                const prev = toTracks(items, profiles);
+                if (prev.length) return build(p, prev);
+              }
+              return null;
+            }
+          : undefined,
     });
     return build(currentPage, toTracks(feedItems, profiles));
   }, [
@@ -294,6 +308,19 @@ export function GalleryPage() {
                         description={entry.data.description}
                         created_at={entry.created_at}
                         coverSrc={entry.data.cover_url}
+                        author={profile}
+                        manage={manageFor(entry)}
+                      />
+                    );
+                  case "video":
+                    return (
+                      <VideoCard
+                        key={`video-${entry.data.id}`}
+                        source={entry.data.source}
+                        videoRef={entry.data.video_ref}
+                        title={entry.data.title}
+                        description={entry.data.description}
+                        created_at={entry.created_at}
                         author={profile}
                         manage={manageFor(entry)}
                       />

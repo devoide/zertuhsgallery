@@ -115,8 +115,12 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
         if (queueRef.current !== q) return; // queue replaced/closed meanwhile
         // append, so "previous" still walks back into the earlier page
         const merged: TrackList = more?.tracks.length
-          ? { tracks: [...q.tracks, ...more.tracks], loadMore: more.loadMore }
-          : { tracks: q.tracks }; // nothing left: no more next
+          ? {
+              tracks: [...q.tracks, ...more.tracks],
+              loadMore: more.loadMore,
+              loadPrev: q.loadPrev,
+            }
+          : { tracks: q.tracks, loadPrev: q.loadPrev }; // no more next
         queueRef.current = merged;
         setQueue(merged);
         if (more?.tracks[0]) play(more.tracks[0]);
@@ -126,9 +130,34 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   }, [indexInQueue, play]);
 
   const prev = useCallback(() => {
+    const q = queueRef.current;
     const i = indexInQueue();
-    const target = i > 0 ? queueRef.current.tracks[i - 1] : undefined;
-    if (target) play(target);
+    if (i < 0) return;
+    const target = q.tracks[i - 1];
+    if (target) return play(target);
+
+    // start of the list: fetch what comes before it (e.g. the previous page)
+    if (!q.loadPrev || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    q.loadPrev()
+      .then((before) => {
+        if (queueRef.current !== q) return; // queue replaced/closed meanwhile
+        // prepend, so "next" still walks forward into the later page
+        const merged: TrackList = before?.tracks.length
+          ? {
+              tracks: [...before.tracks, ...q.tracks],
+              loadMore: q.loadMore,
+              loadPrev: before.loadPrev,
+            }
+          : { tracks: q.tracks, loadMore: q.loadMore }; // no more previous
+        queueRef.current = merged;
+        setQueue(merged);
+        // the track right before the current one = last of the earlier page
+        const last = before?.tracks[before.tracks.length - 1];
+        if (last) play(last);
+      })
+      .catch((err) => console.error("Loading previous tracks failed:", err))
+      .finally(() => (loadingMoreRef.current = false));
   }, [indexInQueue, play]);
 
   const seek = useCallback(
@@ -211,7 +240,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     : -1;
   const hasNext =
     index >= 0 && (index < queue.tracks.length - 1 || !!queue.loadMore);
-  const hasPrev = index > 0;
+  const hasPrev = index > 0 || (index === 0 && !!queue.loadPrev);
 
   // OS media controls (lock screen, keyboard media keys, notification)
   useEffect(() => {

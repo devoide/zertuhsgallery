@@ -8,3 +8,5 @@ export * from "./Navigation";
 export * from "./Pagination";
 export * from "./StoryCard";
 export * from "./StoryForm";
+export * from "./VideoCard";
+export * from "./VideoForm";

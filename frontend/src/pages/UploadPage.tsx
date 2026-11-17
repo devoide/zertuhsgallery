@@ -13,6 +13,7 @@ import { supabase } from "../supabase/client";
 import { DrawingForm } from "../components/DrawingForm";
 import { MusicForm } from "../components/MusicForm";
 import { StoryForm } from "../components/StoryForm";
+import { VideoForm } from "../components/VideoForm";
 import { useNavigate } from "react-router-dom";
 
 export default function UploadPage() {
@@ -35,8 +36,9 @@ export default function UploadPage() {
         <Tabs.List>
           <Tabs.Trigger value="drawing">Drawing</Tabs.Trigger>
           <Tabs.Trigger value="music">Music</Tabs.Trigger>
-          <Tabs.Trigger value="manga">Manga</Tabs.Trigger>
+          {/* manga hidden until it has a form */}
           <Tabs.Trigger value="story">Story</Tabs.Trigger>
+          <Tabs.Trigger value="video">Video</Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="drawing">
           <DrawingForm />
@@ -46,6 +48,9 @@ export default function UploadPage() {
         </Tabs.Content>
         <Tabs.Content value="story">
           <StoryForm />
+        </Tabs.Content>
+        <Tabs.Content value="video">
+          <VideoForm />
         </Tabs.Content>
       </Tabs.Root>
     </Container>

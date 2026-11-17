@@ -1,4 +1,4 @@
-export type FeedType = "drawing" | "story" | "music";
+export type FeedType = "drawing" | "story" | "music" | "video";
 
 export type FeedEntryRaw = {
   id: string;
@@ -16,7 +16,8 @@ export type FeedItem =
       data: CompositionEntry;
       created_at: string;
       author: string;
-    };
+    }
+  | { type: "video"; data: VideoEntry; created_at: string; author: string };
 
 export type ImageEntry = {
   id: string;
@@ -41,6 +42,20 @@ export type CompositionEntry = {
   description: string;
   audio_url: string;
   cover_url: string;
+  created_at: string;
+  author: string;
+};
+
+/** where a video lives; decides how it's played */
+export type VideoSource = "youtube" | "upload";
+
+export type VideoEntry = {
+  id: string;
+  title: string;
+  description: string;
+  source: VideoSource;
+  /** youtube: 11-char video id · upload: public URL of the file */
+  video_ref: string;
   created_at: string;
   author: string;
 };

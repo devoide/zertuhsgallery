@@ -16,6 +16,8 @@ export type TrackList = {
   tracks: Track[];
   /** e.g. the next gallery page's music; resolves null when there's no more */
   loadMore?: () => Promise<TrackList | null>;
+  /** e.g. the previous gallery page's music; resolves null at the start */
+  loadPrev?: () => Promise<TrackList | null>;
 };
 
 export type PlayOptions = {

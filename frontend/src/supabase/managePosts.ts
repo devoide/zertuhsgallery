@@ -5,6 +5,7 @@ const typeToTable = {
   drawing: "images",
   music: "compositions",
   story: "stories",
+  video: "videos",
 } as const;
 
 // the long-text column differs per table
@@ -12,6 +13,7 @@ const textColumn = {
   drawing: "description",
   music: "description",
   story: "content",
+  video: "description",
 } as const;
 
 const BUCKET = "images";
@@ -63,7 +65,9 @@ export async function deletePost(item: FeedItem): Promise<string | null> {
       ? [item.data.image_url]
       : item.type === "music"
         ? [item.data.audio_url, item.data.cover_url]
-        : [];
+        : item.type === "video" && item.data.source === "upload"
+          ? [item.data.video_ref]
+          : [];
   const paths = urls.map(storagePath).filter((p): p is string => !!p);
 
   if (paths.length) {

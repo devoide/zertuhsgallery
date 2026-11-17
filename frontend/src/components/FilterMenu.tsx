@@ -11,6 +11,7 @@ const typeOptions: { value: FeedType; label: string }[] = [
   { value: "drawing", label: "Drawings" },
   { value: "story", label: "Stories" },
   { value: "music", label: "Music" },
+  { value: "video", label: "Videos" },
 ];
 
 interface FilterMenuProps {
@@ -70,8 +71,6 @@ export const FilterMenu = ({
               ))}
             </Menu.RadioItemGroup>
 
-            <Menu.Separator w="full" />
-
             <Menu.RadioItemGroup
               value={author ?? ALL_AUTHORS}
               onValueChange={(e) =>
@@ -98,7 +97,6 @@ export const FilterMenu = ({
 
             {activeCount > 0 && (
               <>
-                <Menu.Separator w="full" bg="bg.muted" />
                 <Menu.Item
                   value="clear"
                   onClick={() => {
