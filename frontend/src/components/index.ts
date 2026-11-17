@@ -1,6 +1,7 @@
 export * from "./BaseCard";
 export * from "./DrawingCard";
 export * from "./DrawingForm";
+export * from "./FilterMenu";
 export * from "./MusicCard";
 export * from "./MusicForm";
 export * from "./Navigation";

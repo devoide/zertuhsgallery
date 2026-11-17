@@ -95,7 +95,7 @@ export const BaseCard = ({
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content bg={"gray.800"}>
+          <Dialog.Content>
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>

@@ -89,7 +89,7 @@ export const Pagination = ({
                     </Popover.Trigger>
                     <Portal>
                       <Popover.Positioner>
-                        <Popover.Content bg={"gray.800"} width={"auto"}>
+                        <Popover.Content width={"auto"}>
                           <Popover.Body width={"auto"}>
                             <HStack width={"min-content"}>
                               <Input
