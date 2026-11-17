@@ -1,5 +1,5 @@
 import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
-import { menuAnatomy } from "@chakra-ui/react/anatomy";
+import { avatarAnatomy, menuAnatomy } from "@chakra-ui/react/anatomy";
 
 const config = defineConfig({
   theme: {
@@ -29,6 +29,20 @@ const config = defineConfig({
           variant: {
             subtle: {
               item: { _highlighted: { bg: "gray.700" } },
+            },
+          },
+        },
+      },
+      // extra avatar size above Chakra's largest (2xl = 64px)
+      avatar: {
+        slots: avatarAnatomy.keys(),
+        variants: {
+          size: {
+            "3xl": {
+              root: {
+                "--avatar-font-size": "fontSizes.2xl",
+                "--avatar-size": "sizes.20", // 80px
+              },
             },
           },
         },
