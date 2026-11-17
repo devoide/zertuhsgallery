@@ -1,7 +1,9 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { BaseCard } from "./BaseCard";
 import { Text, Image, Flex, VStack, Box } from "@chakra-ui/react";
+import { LuMusic } from "react-icons/lu";
 import { ProfileEntry } from "../supabase/types";
+import { MiniPlayer, type Track } from "../audio";
 
 interface MusicCardProps {
   src: string;
@@ -21,6 +23,11 @@ export const MusicCard = memo(
     author,
     coverSrc,
   }: MusicCardProps) => {
+    const track = useMemo<Track>(
+      () => ({ src, title, cover: coverSrc, author }),
+      [src, title, coverSrc, author],
+    );
+
     return (
       <BaseCard
         title={title}
@@ -31,10 +38,10 @@ export const MusicCard = memo(
         downloadLink={src}
         truncateLines={2}
         previewContent={
-          <>
-            {coverSrc && (
+          <Box>
+            {coverSrc ? (
               <Flex
-                height={"260px"}
+                height={"256px"}
                 align={"center"}
                 justify={"center"}
                 overflow={"hidden"}
@@ -48,50 +55,51 @@ export const MusicCard = memo(
                   w={"100%"}
                 />
               </Flex>
+            ) : (
+              <Flex
+                height={"120px"}
+                align={"center"}
+                justify={"center"}
+                bg={"gray.700"}
+                color={"gray.500"}
+                fontSize={"4xl"}
+              >
+                <LuMusic />
+              </Flex>
             )}
-            <audio
-              controls
-              style={{
-                width: "100%",
-              }}
-            >
-              <source src={src} />
-              ur browser old asf
-            </audio>
-          </>
+            {/* 44px tall: 256px cover + 44px = 300px, same as drawing cards */}
+            <MiniPlayer track={track} lazy />
+          </Box>
         }
         modalContent={
-          <VStack align={"center"} gap={0} width={"full"}>
-            {coverSrc && (
-              <Flex
-                align={"center"}
-                justify={"center"}
-                overflow={"hidden"}
-                bg={"white"}
-                borderTopRadius={"md"}
-              >
-                <Image
-                  src={coverSrc}
-                  alt={title}
-                  objectFit={"cover"}
-                  h={"100%"}
-                  w={"100%"}
-                />
-              </Flex>
-            )}
-            <VStack gap={2} width={"full"}>
-              <audio controls style={{ width: "100%" }}>
-                <source src={src} />
-                ur browser old asf
-              </audio>
-              {description && (
-                <Box width={"full"}>
-                  <Text fontSize="sm" color="gray.200" whiteSpace={"pre-wrap"}>
-                    {description}
-                  </Text>
-                </Box>
+          <VStack align={"center"} gap={3} width={"full"}>
+            {/* cover + player as one block, same as on the card */}
+            <Box width={"full"} rounded={"md"} overflow={"hidden"}>
+              {coverSrc && (
+                <Flex
+                  align={"center"}
+                  justify={"center"}
+                  overflow={"hidden"}
+                  bg={"white"}
+                >
+                  <Image
+                    src={coverSrc}
+                    alt={title}
+                    objectFit={"cover"}
+                    h={"100%"}
+                    w={"100%"}
+                  />
+                </Flex>
               )}
-            </VStack>
+              <MiniPlayer track={track} bars={100} />
+            </Box>
+            {description && (
+              <Box width={"full"}>
+                <Text fontSize="sm" color="gray.200" whiteSpace={"pre-wrap"}>
+                  {description}
+                </Text>
+              </Box>
+            )}
           </VStack>
         }
       />

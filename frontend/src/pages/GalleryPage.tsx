@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Center,
   Container,
@@ -23,6 +23,7 @@ import {
   MusicCard,
   FilterMenu,
 } from "../components";
+import { TrackListContext, useAudioPlayer, type Track } from "../audio";
 
 const PAGE_SIZE = 15;
 
@@ -60,16 +61,38 @@ export function GalleryPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // jump back to page 1 whenever filters change
+  const { close: closePlayer } = useAudioPlayer();
+
+  // on filter/sort/search change: stop the player (its queue belongs to the
+  // old list) and jump back to page 1. Plain pagination keeps playing.
   const isFirstFilterRun = useRef(true);
   useEffect(() => {
     if (isFirstFilterRun.current) {
       isFirstFilterRun.current = false;
       return;
     }
+    closePlayer();
     if (currentPage !== 1) setSearchParams({ page: "1" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authorFilter, typeFilter, search]);
+  }, [authorFilter, typeFilter, search, sortNewest]);
+
+  // music on this page, in display order: the queue for next/previous
+  const pageTracks = useMemo<Track[]>(
+    () =>
+      feedItems.flatMap((entry) =>
+        entry.type === "music"
+          ? [
+              {
+                src: entry.data.audio_url,
+                title: entry.data.title,
+                cover: entry.data.cover_url,
+                author: profiles.find((p) => p.id === entry.data.author),
+              },
+            ]
+          : [],
+      ),
+    [feedItems, profiles],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -147,48 +170,50 @@ export function GalleryPage() {
         </Center>
       ) : (
         <>
-          <SimpleGrid columns={[1, 2, 3]} gap={6}>
-            {feedItems.map((entry) => {
-              const profile = profiles.find((p) => p.id === entry.data.author);
-              switch (entry.type) {
-                case "drawing":
-                  return (
-                    <DrawingCard
-                      key={`drawing-${entry.data.id}`}
-                      src={entry.data.image_url}
-                      title={entry.data.title}
-                      description={entry.data.description}
-                      created_at={entry.created_at}
-                      author={profile}
-                    />
-                  );
-                case "story":
-                  return (
-                    <StoryCard
-                      key={`story-${entry.data.id}`}
-                      title={entry.data.title}
-                      description={entry.data.content}
-                      created_at={entry.created_at}
-                      author={profile}
-                    />
-                  );
-                case "music":
-                  return (
-                    <MusicCard
-                      key={`music-${entry.data.id}`}
-                      src={entry.data.audio_url}
-                      title={entry.data.title}
-                      description={entry.data.description}
-                      created_at={entry.created_at}
-                      coverSrc={entry.data.cover_url}
-                      author={profile}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })}
-          </SimpleGrid>
+          <TrackListContext.Provider value={pageTracks}>
+            <SimpleGrid columns={[1, 2, 3]} gap={6}>
+              {feedItems.map((entry) => {
+                const profile = profiles.find((p) => p.id === entry.data.author);
+                switch (entry.type) {
+                  case "drawing":
+                    return (
+                      <DrawingCard
+                        key={`drawing-${entry.data.id}`}
+                        src={entry.data.image_url}
+                        title={entry.data.title}
+                        description={entry.data.description}
+                        created_at={entry.created_at}
+                        author={profile}
+                      />
+                    );
+                  case "story":
+                    return (
+                      <StoryCard
+                        key={`story-${entry.data.id}`}
+                        title={entry.data.title}
+                        description={entry.data.content}
+                        created_at={entry.created_at}
+                        author={profile}
+                      />
+                    );
+                  case "music":
+                    return (
+                      <MusicCard
+                        key={`music-${entry.data.id}`}
+                        src={entry.data.audio_url}
+                        title={entry.data.title}
+                        description={entry.data.description}
+                        created_at={entry.created_at}
+                        coverSrc={entry.data.cover_url}
+                        author={profile}
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              })}
+            </SimpleGrid>
+          </TrackListContext.Provider>
           <Flex mt={8} justify={"center"}>
             <Pagination
               totalItems={totalItems}
