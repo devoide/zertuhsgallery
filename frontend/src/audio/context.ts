@@ -11,11 +11,18 @@ export type Track = {
   author?: ProfileEntry;
 };
 
+/** an ordered list of tracks, optionally able to fetch what comes after it */
+export type TrackList = {
+  tracks: Track[];
+  /** e.g. the next gallery page's music; resolves null when there's no more */
+  loadMore?: () => Promise<TrackList | null>;
+};
+
 export type PlayOptions = {
   /** seconds to jump to */
   startAt?: number;
   /** tracks for next/previous; replaces the current queue when given */
-  queue?: Track[];
+  queue?: TrackList;
 };
 
 export type AudioPlayerState = {
@@ -54,7 +61,9 @@ export const AudioProgressContext = createContext<AudioProgress>({
  * The list of tracks currently on screen (e.g. the music on a gallery page).
  * Play buttons inside it hand this list to the player as the queue.
  */
-export const TrackListContext = createContext<Track[] | undefined>(undefined);
+export const TrackListContext = createContext<TrackList | undefined>(
+  undefined,
+);
 
 export function useAudioPlayer() {
   const ctx = useContext(AudioPlayerContext);

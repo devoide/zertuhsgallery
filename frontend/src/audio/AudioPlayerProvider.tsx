@@ -6,6 +6,7 @@ import {
   type AudioPlayerState,
   type PlayOptions,
   type Track,
+  type TrackList,
 } from "./context";
 
 const VOLUME_KEY = "player-volume";
@@ -27,10 +28,11 @@ function readStoredVolume() {
 export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const [audio] = useState(() => new Audio());
   const trackRef = useRef<Track | null>(null);
-  const queueRef = useRef<Track[]>([]);
+  const queueRef = useRef<TrackList>({ tracks: [] });
+  const loadingMoreRef = useRef(false);
 
   const [track, setTrack] = useState<Track | null>(null);
-  const [queue, setQueue] = useState<Track[]>([]);
+  const [queue, setQueue] = useState<TrackList>({ tracks: [] });
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(readStoredVolume);
   const [currentTime, setCurrentTime] = useState(0);
@@ -91,19 +93,41 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   );
 
   const indexInQueue = useCallback(
-    () => queueRef.current.findIndex((t) => t.src === trackRef.current?.src),
+    () =>
+      queueRef.current.tracks.findIndex(
+        (t) => t.src === trackRef.current?.src,
+      ),
     [],
   );
 
   const next = useCallback(() => {
+    const q = queueRef.current;
     const i = indexInQueue();
-    const target = i >= 0 ? queueRef.current[i + 1] : undefined;
-    if (target) play(target);
+    if (i < 0) return;
+    const target = q.tracks[i + 1];
+    if (target) return play(target);
+
+    // end of the list: fetch what comes after it (e.g. the next page)
+    if (!q.loadMore || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    q.loadMore()
+      .then((more) => {
+        if (queueRef.current !== q) return; // queue replaced/closed meanwhile
+        // append, so "previous" still walks back into the earlier page
+        const merged: TrackList = more?.tracks.length
+          ? { tracks: [...q.tracks, ...more.tracks], loadMore: more.loadMore }
+          : { tracks: q.tracks }; // nothing left: no more next
+        queueRef.current = merged;
+        setQueue(merged);
+        if (more?.tracks[0]) play(more.tracks[0]);
+      })
+      .catch((err) => console.error("Loading more tracks failed:", err))
+      .finally(() => (loadingMoreRef.current = false));
   }, [indexInQueue, play]);
 
   const prev = useCallback(() => {
     const i = indexInQueue();
-    const target = i > 0 ? queueRef.current[i - 1] : undefined;
+    const target = i > 0 ? queueRef.current.tracks[i - 1] : undefined;
     if (target) play(target);
   }, [indexInQueue, play]);
 
@@ -133,9 +157,9 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     audio.removeAttribute("src");
     audio.load();
     trackRef.current = null;
-    queueRef.current = [];
+    queueRef.current = { tracks: [] };
     setTrack(null);
-    setQueue([]);
+    setQueue({ tracks: [] });
     setCurrentTime(0);
     setDuration(0);
   }, [audio]);
@@ -182,8 +206,11 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 
-  const index = track ? queue.findIndex((t) => t.src === track.src) : -1;
-  const hasNext = index >= 0 && index < queue.length - 1;
+  const index = track
+    ? queue.tracks.findIndex((t) => t.src === track.src)
+    : -1;
+  const hasNext =
+    index >= 0 && (index < queue.tracks.length - 1 || !!queue.loadMore);
   const hasPrev = index > 0;
 
   // OS media controls (lock screen, keyboard media keys, notification)

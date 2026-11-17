@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { BaseCard } from "./BaseCard";
+import type { PostManage } from "./PostActions";
 import { ProfileEntry } from "../supabase/types";
 
 interface DrawingCardProps {
@@ -8,10 +9,11 @@ interface DrawingCardProps {
   description?: string;
   created_at: string;
   author: ProfileEntry | undefined;
+  manage?: PostManage;
 }
 
 export const DrawingCard = memo(
-  ({ src, title, description, created_at, author }: DrawingCardProps) => {
+  ({ src, title, description, created_at, author, manage }: DrawingCardProps) => {
     return (
       <BaseCard
         src={src}
@@ -22,6 +24,7 @@ export const DrawingCard = memo(
         downloadLabel="Download Drawing"
         downloadLink={src}
         truncateLines={2}
+        manage={manage}
       />
     );
   }

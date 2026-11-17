@@ -15,6 +15,9 @@ import { LuSearch } from "react-icons/lu";
 import type { FeedItem, FeedType, ProfileEntry } from "../supabase/types";
 import { fetchFeedPage } from "../supabase/fetchFeed";
 import { fetchProfiles } from "../supabase/fetchProfiles";
+import { deletePost, updatePost } from "../supabase/managePosts";
+import { useCurrentUserId } from "../supabase/useCurrentUserId";
+import type { PostManage } from "../components/PostActions";
 import { useSearchParams } from "react-router-dom";
 import {
   Pagination,
@@ -23,9 +26,30 @@ import {
   MusicCard,
   FilterMenu,
 } from "../components";
-import { TrackListContext, useAudioPlayer, type Track } from "../audio";
+import {
+  TrackListContext,
+  useAudioPlayer,
+  type Track,
+  type TrackList,
+} from "../audio";
 
 const PAGE_SIZE = 15;
+
+/** the music tracks among feed items, in display order */
+function toTracks(items: FeedItem[], profiles: ProfileEntry[]): Track[] {
+  return items.flatMap((entry) =>
+    entry.type === "music"
+      ? [
+          {
+            src: entry.data.audio_url,
+            title: entry.data.title,
+            cover: entry.data.cover_url,
+            author: profiles.find((p) => p.id === entry.data.author),
+          },
+        ]
+      : [],
+  );
+}
 
 export function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -61,7 +85,10 @@ export function GalleryPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { close: closePlayer } = useAudioPlayer();
+  const { close: closePlayer, track: currentTrack } = useAudioPlayer();
+  const userId = useCurrentUserId();
+  // bumped after a delete to refetch the page (counts/pagination change)
+  const [reloadKey, setReloadKey] = useState(0);
 
   // on filter/sort/search change: stop the player (its queue belongs to the
   // old list) and jump back to page 1. Plain pagination keeps playing.
@@ -76,23 +103,34 @@ export function GalleryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorFilter, typeFilter, search, sortNewest]);
 
-  // music on this page, in display order: the queue for next/previous
-  const pageTracks = useMemo<Track[]>(
-    () =>
-      feedItems.flatMap((entry) =>
-        entry.type === "music"
-          ? [
-              {
-                src: entry.data.audio_url,
-                title: entry.data.title,
-                cover: entry.data.cover_url,
-                author: profiles.find((p) => p.id === entry.data.author),
-              },
-            ]
-          : [],
-      ),
-    [feedItems, profiles],
-  );
+  // music on this page = the queue for next/previous. At its end the player
+  // calls loadMore, which fetches the following pages (same sort + filters)
+  // until one has music, so playback carries on past this page.
+  const pageTracks = useMemo<TrackList>(() => {
+    const filters = { author: authorFilter, type: typeFilter, search };
+    const lastPage = Math.ceil(totalItems / PAGE_SIZE);
+    const build = (page: number, tracks: Track[]): TrackList => ({
+      tracks,
+      loadMore: async () => {
+        for (let p = page + 1; p <= lastPage; p++) {
+          const { items } = await fetchFeedPage(p, sortNewest, filters);
+          const next = toTracks(items, profiles);
+          if (next.length) return build(p, next);
+        }
+        return null;
+      },
+    });
+    return build(currentPage, toTracks(feedItems, profiles));
+  }, [
+    feedItems,
+    profiles,
+    currentPage,
+    totalItems,
+    sortNewest,
+    authorFilter,
+    typeFilter,
+    search,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +142,11 @@ export function GalleryPage() {
         search,
       });
       if (cancelled) return;
+      // e.g. deleted the last post on the last page: go to the new last page
+      if (items.length === 0 && count > 0 && currentPage > 1) {
+        setSearchParams({ page: String(Math.ceil(count / PAGE_SIZE)) });
+        return;
+      }
       setFeedItems(items);
       setTotalItems(count);
       setLoading(false);
@@ -113,7 +156,51 @@ export function GalleryPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, sortNewest, authorFilter, typeFilter, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, sortNewest, authorFilter, typeFilter, search, reloadKey]);
+
+  /** edit/delete handlers, only for posts the logged-in user owns */
+  const manageFor = (entry: FeedItem): PostManage | undefined => {
+    if (!userId || entry.data.author !== userId) return undefined;
+    return {
+      onSave: async (edit) => {
+        const err = await updatePost(entry.type, entry.data.id, edit);
+        if (!err) {
+          // update in place so the open modal stays open
+          setFeedItems((items) =>
+            items.map((it) =>
+              it.type === entry.type && it.data.id === entry.data.id
+                ? ({
+                    ...it,
+                    data: {
+                      ...it.data,
+                      title: edit.title,
+                      ...(it.type === "story"
+                        ? { content: edit.text }
+                        : { description: edit.text }),
+                    },
+                  } as FeedItem)
+                : it,
+            ),
+          );
+        }
+        return err;
+      },
+      onDelete: async () => {
+        const err = await deletePost(entry);
+        if (!err) {
+          if (
+            entry.type === "music" &&
+            currentTrack?.src === entry.data.audio_url
+          ) {
+            closePlayer();
+          }
+          setReloadKey((k) => k + 1);
+        }
+        return err;
+      },
+    };
+  };
 
   useEffect(() => {
     setJumpValue(currentPage);
@@ -184,6 +271,7 @@ export function GalleryPage() {
                         description={entry.data.description}
                         created_at={entry.created_at}
                         author={profile}
+                        manage={manageFor(entry)}
                       />
                     );
                   case "story":
@@ -194,6 +282,7 @@ export function GalleryPage() {
                         description={entry.data.content}
                         created_at={entry.created_at}
                         author={profile}
+                        manage={manageFor(entry)}
                       />
                     );
                   case "music":
@@ -206,6 +295,7 @@ export function GalleryPage() {
                         created_at={entry.created_at}
                         coverSrc={entry.data.cover_url}
                         author={profile}
+                        manage={manageFor(entry)}
                       />
                     );
                   default:

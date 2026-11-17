@@ -12,4 +12,5 @@ export {
   formatTime,
   PLAYER_BAR_HEIGHT,
   type Track,
+  type TrackList,
 } from "./context";

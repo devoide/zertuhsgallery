@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
 import { BaseCard } from "./BaseCard";
+import type { PostManage } from "./PostActions";
 import { Text, Image, Flex, VStack, Box } from "@chakra-ui/react";
 import { ProfileEntry } from "../supabase/types";
 import { MiniPlayer, type Track } from "../audio";
@@ -11,6 +12,7 @@ interface MusicCardProps {
   created_at: string;
   coverSrc?: string;
   author: ProfileEntry | undefined;
+  manage?: PostManage;
 }
 
 export const MusicCard = memo(
@@ -21,6 +23,7 @@ export const MusicCard = memo(
     created_at,
     author,
     coverSrc,
+    manage,
   }: MusicCardProps) => {
     const track = useMemo<Track>(
       () => ({ src, title, cover: coverSrc, author }),
@@ -36,6 +39,7 @@ export const MusicCard = memo(
         downloadLabel="Download Audio"
         downloadLink={src}
         truncateLines={2}
+        manage={manage}
         previewContent={
           <Box>
             {coverSrc && (

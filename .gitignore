@@ -1,5 +1,5 @@
-# Database dumps
-*.sql
+# Database dumps (root only; db/*.sql migrations are tracked)
+/*.sql
 
 # Local copy of Supabase storage buckets
 /storage/

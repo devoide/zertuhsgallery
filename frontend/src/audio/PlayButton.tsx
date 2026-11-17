@@ -19,8 +19,7 @@ export const PlayButton = ({ track, ...props }: PlayButtonProps) => {
     <IconButton
       aria-label={playing ? "Pause" : "Play"}
       rounded="full"
-      variant="outline"
-      bg="blackAlpha.600"
+      variant="ghost"
       {...props}
       onClick={(e) => {
         e.stopPropagation();
